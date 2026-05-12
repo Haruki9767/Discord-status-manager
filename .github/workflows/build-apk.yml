@@ -26,3 +26,11 @@ jobs:
 
       - name: Build Debug APK
         run: ./gradlew assembleDebug --stacktrace --no-daemon
+
+      # ←←← ADD THIS STEP (Upload APK)
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: DiscordStatusApp-debug
+          path: DiscordStatusApp/build/outputs/apk/debug/*.apk
+          retention-days: 30
