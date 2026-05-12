@@ -1,0 +1,4 @@
+# Force correct line endings for Gradle wrapper
+gradlew          text eol=lf
+gradlew.bat      text eol=crlf
+gradle/wrapper/* text eol=lf
