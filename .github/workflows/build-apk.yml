@@ -10,7 +10,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Make gradlew executable
         run: chmod +x ./gradlew
@@ -27,10 +28,12 @@ jobs:
       - name: Build Debug APK
         run: ./gradlew assembleDebug --stacktrace --no-daemon
 
-      # ←←← ADD THIS STEP (Upload APK)
-      - name: Upload APK
+      # ====================== UPLOAD APK ======================
+      - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
           name: DiscordStatusApp-debug
-          path: DiscordStatusApp/build/outputs/apk/debug/*.apk
+          path: app/build/outputs/apk/debug/*.apk
           retention-days: 30
+          # Optional: compress the artifact
+          if-no-files-found: warn
