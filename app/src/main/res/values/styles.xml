@@ -1,0 +1,10 @@
+<resources>
+    <style name="Theme.DiscordStatus" parent="Theme.AppCompat.NoActionBar">
+        <item name="colorPrimary">#5865F2</item>
+        <item name="colorPrimaryDark">#0e0f11</item>
+        <item name="colorAccent">#5865F2</item>
+        <item name="android:windowBackground">#0e0f11</item>
+        <item name="android:statusBarColor">#0e0f11</item>
+        <item name="android:navigationBarColor">#0e0f11</item>
+    </style>
+</resources>
