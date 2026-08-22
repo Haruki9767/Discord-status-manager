@@ -13,7 +13,7 @@ An Android app for setting a fully custom Discord Rich Presence (RPC) status —
 
 ## Installation
 
-1. Go to the [Releases](../../releases) page
+1. Go to the [Releases](https://github.com/Haruki9767/Discord-status-manager/releases/tag/v70.0.0) page
 2. Download the latest APK
 3. Install it on your Android device (you may need to allow installs from unknown sources)
 
