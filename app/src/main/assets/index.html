@@ -559,7 +559,7 @@ header { background:var(--surface); border-bottom:1px solid var(--border); paddi
             <button class="btn btn-sm btn-primary" id="music-manual-apply">Apply</button>
           </div>
         </div>
-        <div class="music-note">⚠️ <strong>Why auto-detect may not work:</strong> Browsers don't let one page read another tab's media. Auto-detect only works if <em>this tab</em> is playing audio, or on some <strong>Android</strong> browsers that share the system media session. For desktop apps (Spotify, Apple Music, etc.) and most PC browsers — use the <strong>manual entry</strong> above. It always works.</div>
+        <div class="music-note">⚠️ <strong>(Beta) Why auto-detect may not work:</strong> Browsers don't let one page read another tab's media. Auto-detect only works if <em>this tab</em> is playing audio, or on some <strong>Android</strong> browsers that share the system media session. For desktop apps (Spotify, Apple Music, etc.) and most PC browsers — use the <strong>manual entry</strong> above. It always works.</div>
       </div>
 
       <!-- AFK Auto-Idle -->
@@ -641,7 +641,7 @@ header { background:var(--surface); border-bottom:1px solid var(--border); paddi
             <div><label class="field-label">State (line 2)</label><input type="text" id="act-state" placeholder="e.g. In a game" /></div>
           </div>
           <div style="margin-bottom:11px">
-            <label class="field-label">Application ID</label>
+            <label class="field-label">Application ID (optional)</label>
             <input type="text" id="act-appid" placeholder="Needed for uploaded Discord app assets" />
             <div class="hint">From the Discord Developer Portal. Use this with uploaded Rich Presence assets; normal web image URLs only preview here and will not render in Discord.</div>
           </div>
@@ -657,9 +657,9 @@ header { background:var(--surface); border-bottom:1px solid var(--border); paddi
           <div class="asset-status" id="asset-preview-note"></div>
             <div class="img-info-box">
             <div class="iib-title"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>What Discord will actually load</div>
-            Discord does <strong>not</strong> reliably load random image links in activity assets. This app now refuses to send fake <code>mp:external</code> values because those are why images silently never show.
-            <div class="iib-method"><strong>Recommended — uploaded Discord asset:</strong><ol><li>Go to <code>discord.com/developers/applications</code></li><li>New Application → Rich Presence → Art Assets → upload the image</li><li>Paste the <strong>App ID</strong> above and type the uploaded asset key/id in the image field</li></ol></div>
-            <div class="iib-method"><strong>Also works sometimes:</strong><br>Paste a Discord CDN attachment URL or a Discord <code>/app-assets/</code> CDN URL. Imgur, ImgBB, Tenor, Giphy, and normal website images may preview here but will not be sent to Discord.</div>
+            Discord does <strong>not</strong> reliably load random image links in activity asset if its a pinterest link  or other third party. For best results please use Google image links.
+            <div class="iib-method"><strong>Recommended — uploaded Discord asset:</strong><ol><li>Go to <code>discord.com/developers/applications</code></li><li>New Application → Rich Presence → Art Assets → upload the image</li><li>Paste the <strong>App ID</strong> above and type the uploaded asset key/id in the image field (Doesnt work sometimes)</li></ol></div>
+            <div class="iib-method"><strong>Also works:</strong><br>Paste a Discord CDN attachment URL or a Discord <code>/app-assets/</code> CDN URL. Imgur, ImgBB, Tenor, Giphy, and normal website images may preview here but Discord might not load them somtimes.</div>
           </div>
           <div class="section-label" style="margin-top:13px">Small Image</div>
           <div style="margin-bottom:7px">
@@ -722,7 +722,7 @@ header { background:var(--surface); border-bottom:1px solid var(--border); paddi
       <!-- Schedule Rules -->
       <div class="card">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-          <div class="card-title" style="margin-bottom:0">🗓 Schedule Rules</div>
+          <div class="card-title" style="margin-bottom:0">🗓 Schedule Rules (beta)</div>
           <label class="toggle-wrap"><span style="font-size:11px;color:var(--text2)">Enable</span><div class="toggle" id="schedule-toggle"></div></label>
         </div>
         <div id="schedule-body">
@@ -802,13 +802,13 @@ header { background:var(--surface); border-bottom:1px solid var(--border); paddi
     </div>
   </div>
   <footer class="panda-footer" style="max-width:980px;margin:0 auto;width:100%;padding-bottom:20px">
-    <span class="panda-made">🐼 Made by Panda</span>
+    <span class="panda-made">Made by Lime</span>
     <span class="dot-sep">·</span>
-    <a href="https://panda-404.netlify.app/" target="_blank" rel="noopener">Portfolio</a>
+    <a href="https://lime.is-a.dev" target="_blank" rel="noopener">Portfolio</a>
     <span class="dot-sep">·</span>
-    <a href="https://aboutme-panda.netlify.app/" target="_blank" rel="noopener">About me</a>
+    <a href="https://github.com/Haruki9767/Discord-status-manager" target="_blank" rel="noopener"Repository</a>
     <span class="dot-sep">·</span>
-    <a href="https://mail-panda.netlify.app/" target="_blank" rel="noopener">💌 Send anonymous message</a>
+    <a href="https://https://paranoid-projects.pages.dev/" target="_blank" rel="noopener">My Projects</a>
   </footer>
 </div>
 
