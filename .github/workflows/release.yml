@@ -3,13 +3,17 @@ name: Build and Release APK
 on:
   push:
     tags:
-      - 'v*'    
-  workflow_dispatch:   
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write   # required for softprops/action-gh-release to create releases
 
 jobs:
   build:
     name: Build and Release
     runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
 
     steps:
       - name: Checkout repository
