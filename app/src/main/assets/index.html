@@ -1278,7 +1278,39 @@ function pollMusic(){
     } else {if(lastMusicTitle){lastMusicTitle='';$('music-detected-box').classList.add('hidden');$('music-eq').style.display='none';}}
   }catch{}
 }
-function applyMusicAsActivity(song,artist){$('act-type').value='2';$('act-name').value=song||'Music';$('act-details').value=artist||'';$('act-state').value='';setActivityEnabled(true);onTypeChange();updatePreview();applyPresence();}
+async function fetchArtworkUrl(song, artist) {
+  try {
+    const term = encodeURIComponent(`${song} ${artist}`.trim());
+    const res = await fetch(`https://itunes.apple.com/search?term=${term}&media=music&limit=1`);
+    if (!res.ok) return '';
+    const data = await res.json();
+    if (data.results && data.results.length) {
+      // iTunes gives 100x100 by default; bump to 512x512 for a sharper image
+      return data.results[0].artworkUrl100.replace('100x100bb', '512x512bb');
+    }
+  } catch {}
+  return '';
+}
+
+async function applyMusicAsActivity(song, artist) {
+  // Clear first to avoid Discord showing stale + new activity together
+  if (gw && gw._state === 'connected') gw.clearPresence(currentStatus);
+  if (Server.isActive()) await Server.updatePresence({ status: currentStatus, activities: [], afk: false, since: null });
+
+  $('act-type').value = '2';
+  $('act-name').value = song || 'Music';
+  $('act-details').value = artist || '';
+  $('act-state').value = '';
+  const artwork = await fetchArtworkUrl(song, artist);
+  if (artwork) {
+    $('act-lg-img').value = artwork;
+    $('act-lg-txt').value = song || '';
+  }
+  setActivityEnabled(true);
+  onTypeChange();
+  updatePreview();
+  await applyPresence();
+}
 function updateNotifAccessStatus(enabled) {
   const el = $('notif-access-banner');
   if (!el) return;
