@@ -23,5 +23,15 @@
             </intent-filter>
         </activity>
 
+        <service
+            android:name=".NotificationListener"
+            android:label="Discord Status Notification Listener"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
+
     </application>
 </manifest>
