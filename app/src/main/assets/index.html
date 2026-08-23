@@ -399,7 +399,7 @@ header { background:var(--surface); border-bottom:1px solid var(--border); paddi
   .asset-status { margin-top:6px;font-size:11px;color:var(--text3);line-height:1.45; }
   .preset-tools { display:flex;gap:7px;margin-bottom:10px; }
   .btn-kawaii { background:linear-gradient(135deg,rgba(255,122,200,.14),rgba(156,231,255,.16)); color:var(--primary); border:1px solid rgba(255,122,200,.28); }
-  
+
 </style>
 </head>
 <body>
@@ -449,13 +449,13 @@ header { background:var(--surface); border-bottom:1px solid var(--border); paddi
     </div>
   </div>
   <footer class="panda-footer">
-    <span class="panda-made">🐼 Made by Panda</span>
+    <span class="panda-made">Made by Lime</span>
     <span class="dot-sep">·</span>
-    <a href="https://panda-404.netlify.app/" target="_blank" rel="noopener">Portfolio</a>
+    <a href="https://lime.is-a.dev/" target="_blank" rel="noopener">Portfolio</a>
     <span class="dot-sep">·</span>
-    <a href="https://aboutme-panda.netlify.app/" target="_blank" rel="noopener">About me</a>
+    <a href="https://paranoid-projects.pages/" target="_blank" rel="noopener">Other projects</a>
     <span class="dot-sep">·</span>
-    <a href="https://mail-panda.netlify.app/" target="_blank" rel="noopener">💌 Send anonymous message</a>
+    <a href="https://github.com/Haruki9767/Discord-status-manager" target="_blank" rel="noopener">Github</a>
   </footer>
 </div>
 
@@ -961,7 +961,7 @@ $('test-server-btn').addEventListener('click',()=>testServerConnection($('server
     }
     return p;
   }
-  
+
 // ═══════════ PRESENCE BUILDER ═══════════
 function buildPresence() {
   const p={status:currentStatus,afk:false,since:null,activities:[]};
@@ -1081,13 +1081,13 @@ const Server={
       run.textContent=a?'Running activity: '+a.name+(a.details?' — '+a.details:''):'Running activity: custom status';
     } else run.textContent='Running activity: none';
   }
-  
+
 
 // ═══════════ APP STATE ═══════════
 let gw=null, currentStatus='online', activityEnabled=false, isActive=false;
 let buttonIds=[], presets=[], timerInterval=null, savedToken='', savedApiBase='';
 try{presets=JSON.parse(localStorage.getItem('ds_presets')||'[]');}catch{}
-  
+
   const PREBUILT_PRESETS=[
     ['Minecraft','online',0,'Minecraft','Building a cozy base','Survival mode','minecraft'],
     ['Valorant','dnd',0,'VALORANT','Competitive queue','Clutch or kick','valorant'],
@@ -1111,7 +1111,7 @@ try{presets=JSON.parse(localStorage.getItem('ds_presets')||'[]');}catch{}
     if(force){presets = presets.filter(p=>!PREBUILT_PRESETS.some(bp=>bp.name===p.name));}
     presets.push(...toAdd);savePresets();renderPresets();renderRotationPresets();
   }
-  
+
 
 function avatarUrl(u){try{if(!u.avatar)return`https://cdn.discordapp.com/embed/avatars/${Number(BigInt(u.id)>>22n)%6}.png`;return`https://cdn.discordapp.com/avatars/${u.id}/${u.avatar}.png?size=128`;}catch{return'https://cdn.discordapp.com/embed/avatars/0.png';}}
 function toDateLocal(ts){if(!ts)return'';const d=new Date(typeof ts==='number'?ts:Date.parse(ts));if(isNaN(d))return'';const pad=n=>String(n).padStart(2,'0');return`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;}
