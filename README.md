@@ -10,10 +10,11 @@ An Android app for setting a fully custom Discord Rich Presence (RPC) status —
 -  **Timestamps** — show elapsed or remaining time
 -  **24/7 uptime** — status stays live via a server, even when the app is closed
 -  **Login with Discord token**
+-  **No problem with 2FA authentication while logging in**
 
 ## Installation
 
-1. Go to the [Releases](https://github.com/Haruki9767/Discord-status-manager/releases/tag/v70.0.0) page
+1. Go to the [Releases](https://github.com/Haruki9767/Discord-status-manager/releases/tag/v71.0.0) page
 2. Download the latest APK
 3. Install it on your Android device (you may need to allow installs from unknown sources)
 
