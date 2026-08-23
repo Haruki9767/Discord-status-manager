@@ -1,32 +1,45 @@
 package com.panda.discordstatus
 
 import android.annotation.SuppressLint
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.net.Uri
 import android.os.Bundle
 import android.os.Message
-import android.webkit.WebChromeClient
-import android.webkit.WebResourceRequest
-import android.webkit.WebSettings
-import android.webkit.WebView
-import android.webkit.WebViewClient
+import android.provider.Settings
+import android.webkit.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import org.json.JSONObject
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var webView: WebView
 
-    private val externalDomains = listOf(
-        "discord.gg",
-        "discord-activity.cc.cd"
-    )
+    private val externalDomains = listOf("discord.gg", "discord-activity.cc.cd")
 
-    private fun isExternalLink(url: String): Boolean {
-        return externalDomains.any { url.contains(it) }
-    }
+    private fun isExternalLink(url: String) = externalDomains.any { url.contains(it) }
+    private fun openInBrowser(url: String) = startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
 
-    private fun openInBrowser(url: String) {
-        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+    private val musicReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            when (intent.action) {
+                "MUSIC_UPDATED" -> {
+                    val title = intent.getStringExtra("title") ?: return
+                    val artist = intent.getStringExtra("artist") ?: ""
+                    val js = "applyMusicAsActivity(${JSONObject.quote(title)}, ${JSONObject.quote(artist)});"
+                    webView.evaluateJavascript(js, null)
+                }
+                "MUSIC_STOPPED" -> {
+                    webView.evaluateJavascript(
+                        "if(typeof musicDismissed!=='undefined'){musicDismissed=true;}",
+                        null
+                    )
+                }
+            }
+        }
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -85,8 +98,36 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // Load from local assets
         webView.loadUrl("file:///android_asset/index.html")
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+            musicReceiver,
+            IntentFilter().apply {
+                addAction("MUSIC_UPDATED")
+                addAction("MUSIC_STOPPED")
+            }
+        )
+
+        if (!isNotificationServiceEnabled()) {
+            startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val enabled = isNotificationServiceEnabled()
+        val js = "if(typeof updateNotifAccessStatus==='function'){updateNotifAccessStatus($enabled);}"
+        webView.evaluateJavascript(js, null)
+    }
+
+    private fun isNotificationServiceEnabled(): Boolean {
+        val enabledListeners = Settings.Secure.getString(contentResolver, "enabled_notification_listeners")
+        return enabledListeners?.contains(packageName) == true
+    }
+
+    override fun onDestroy() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(musicReceiver)
+        super.onDestroy()
     }
 
     override fun onBackPressed() {
