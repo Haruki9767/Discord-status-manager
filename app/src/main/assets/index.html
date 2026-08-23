@@ -563,6 +563,7 @@ header { background:var(--surface); border-bottom:1px solid var(--border); paddi
             <button class="btn btn-sm btn-primary" id="music-manual-apply">Apply</button>
           </div>
         </div>
+        <div id="notif-access-banner" class="music-note hidden" style="color:var(--yellow)"></div>
         <div class="music-note">⚠️ <strong>(Beta) Why auto-detect may not work:</strong> Browsers don't let one page read another tab's media. Auto-detect only works if <em>this tab</em> is playing audio, or on some <strong>Android</strong> browsers that share the system media session. For desktop apps (Spotify, Apple Music, etc.) and most PC browsers — use the <strong>manual entry</strong> above. It always works.</div>
       </div>
 
@@ -1278,6 +1279,16 @@ function pollMusic(){
   }catch{}
 }
 function applyMusicAsActivity(song,artist){$('act-type').value='2';$('act-name').value=song||'Music';$('act-details').value=artist||'';$('act-state').value='';setActivityEnabled(true);onTypeChange();updatePreview();applyPresence();}
+function updateNotifAccessStatus(enabled) {
+  const el = $('notif-access-banner');
+  if (!el) return;
+  if (enabled) {
+    el.classList.add('hidden');
+  } else {
+    el.textContent = '⚠️ Notification access is disabled — auto-detect for Spotify/YouTube Music won\'t work. Enable it in your phone Settings, or use manual entry below.';
+    el.classList.remove('hidden');
+  }
+}
 $('music-toggle').addEventListener('click',()=>setMusicEnabled(!musicEnabled));
 $('music-apply-btn').addEventListener('click',()=>applyMusicAsActivity($('music-song').textContent,$('music-artist').textContent));
 $('music-dismiss-btn').addEventListener('click',()=>{musicDismissed=true;$('music-detected-box').classList.add('hidden');$('music-eq').style.display='none';});
