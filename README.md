@@ -26,6 +26,10 @@ An Android app for setting a fully custom Discord Rich Presence (RPC) status —
 
 > ⚠️ **Note on Discord tokens:** Using a self-bot or automating your account through your personal token is against Discord's Terms of Service and carries a risk of account action. Use at your own discretion.
 
+## Web Version-
+
+https://discord-activity.cc.cd/
+
 ## Building from source
 
 This is a standard Gradle-based Android project.
