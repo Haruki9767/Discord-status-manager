@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Discord Status Manager</title>
+<title>Discord Status Manager- by Lime</title>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -760,26 +760,29 @@ header { background:var(--surface); border-bottom:1px solid var(--border); paddi
     <div style="display:flex;flex-direction:column;gap:14px">
 
       <!-- Presets -->
-      <div class="card">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-          <div class="card-title" style="margin-bottom:0"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>Presets</div>
-          <span id="preset-count" style="font-size:11px;color:var(--text3);background:var(--surface3);padding:2px 7px;border-radius:20px">0</span>
-        </div>
-        <div class="preset-io-row">
-          <button class="btn btn-ghost" id="export-presets-btn" title="Export presets to JSON file">↑ Export</button>
-          <label class="btn btn-ghost" style="cursor:pointer" title="Import presets from JSON file">↓ Import<input type="file" id="import-presets-input" accept=".json" style="display:none" /></label>
-        </div>
-        <button class="add-preset-btn" id="restore-prebuilt-btn" style="margin-bottom:10px">↺ Restore built-in presets</button>
-        <div class="save-preset-form hidden" id="save-form">
-          <input type="text" id="preset-name-input" placeholder="Preset name" style="margin-bottom:7px" />
-          <div class="save-row">
-            <button class="btn btn-primary btn-sm" id="save-preset-confirm" style="flex:1">Save</button>
-            <button class="btn btn-ghost btn-sm" id="save-preset-cancel" style="flex:1">Cancel</button>
-          </div>
-        </div>
-        <button class="add-preset-btn" id="open-save-form">+ Save current as preset</button>
-        <div class="preset-list" id="preset-list"><div style="text-align:center;padding:22px 0;color:var(--text3);font-size:12px">No presets yet</div></div>
-      </div>
+<div class="card">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+    <div class="card-title" style="margin-bottom:0"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>Presets</div>
+    <span id="preset-count" style="font-size:11px;color:var(--text3);background:var(--surface3);padding:2px 7px;border-radius:20px">0</span>
+  </div>
+  <div style="font-size:11px;color:var(--text3);background:var(--surface3);border-radius:8px;padding:6px 9px;margin-bottom:10px;line-height:1.4">
+    ⚠️ Import/Export only works in the web version as of now
+  </div>
+  <div class="preset-io-row">
+    <button class="btn btn-ghost" id="export-presets-btn" title="Export presets to JSON file">↑ Export</button>
+    <label class="btn btn-ghost" style="cursor:pointer" title="Import presets from JSON file">↓ Import<input type="file" id="import-presets-input" accept=".json" style="display:none" /></label>
+  </div>
+  <button class="add-preset-btn" id="restore-prebuilt-btn" style="margin-bottom:10px">↺ Restore built-in presets</button>
+  <div class="save-preset-form hidden" id="save-form">
+    <input type="text" id="preset-name-input" placeholder="Preset name" style="margin-bottom:7px" />
+    <div class="save-row">
+      <button class="btn btn-primary btn-sm" id="save-preset-confirm" style="flex:1">Save</button>
+      <button class="btn btn-ghost btn-sm" id="save-preset-cancel" style="flex:1">Cancel</button>
+    </div>
+  </div>
+  <button class="add-preset-btn" id="open-save-form">+ Save current as preset</button>
+  <div class="preset-list" id="preset-list"><div style="text-align:center;padding:22px 0;color:var(--text3);font-size:12px">No presets yet</div></div>
+</div>
 
       <!-- Status Rotation -->
       <div class="card">
@@ -822,7 +825,7 @@ function normalizeApiUrl(url) {
   return url.replace(/\/+$/, '');
 }
 const DEFAULT_API = 'https://activity-twentyfour.onrender.com/api';
-const KIZZY_EXTERNAL_ASSET_APP_ID = '962990036020756480';
+const LIME_EXTERNAL_ASSET_APP_ID = '962990036020756480';
 
 // ═══════════ THEME ═══════════
 const THEMES = ['kawaii','dark','light','sanrio','cyberpunk','minimal'];
@@ -925,7 +928,7 @@ $('test-server-btn').addEventListener('click',()=>testServerConnection($('server
   async function resolveExternalAssetUrl(url, appid){
     const token=savedToken||localStorage.getItem('ds_token');
     if(!token)return '';
-    const targetAppId=appid||KIZZY_EXTERNAL_ASSET_APP_ID;
+    const targetAppId=appid||LIME_EXTERNAL_ASSET_APP_ID;
     const apiBase=normalizeApiUrl((Server&&Server.baseUrl)||savedApiBase||localStorage.getItem('ds_api_base')||DEFAULT_API);
     if(apiBase){
       try{
