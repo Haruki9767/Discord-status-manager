@@ -548,21 +548,60 @@ async function fetchArtworkUrl(song, artist) {
 // state for Rich Presence, so we surface it via a "⏸ Paused" state line and a
 // paused icon on the small image, which is the same convention official
 // integrations like Spotify use).
+//
+// Elapsed-time tracking for pause/resume: we keep a running "elapsed so far" total
+// (musicElapsedMs) plus the timestamp the current playing segment started
+// (musicSegmentStart). On pause we fold the segment into the total and stop the
+// clock. On resume we compute a start timestamp of (now - total elapsed) so
+// Discord's built-in elapsed counter continues from where playback left off
+// instead of restarting at 0:00. A genuinely new song resets both to zero.
+let musicElapsedMs = 0;
+let musicSegmentStart = 0;
+
 async function applyMusicAsActivity(song, artist, isPaused = false) {
   if (gw && gw._state === 'connected') gw.clearPresence(currentStatus);
   if (Server.isActive()) await Server.updatePresence({ status: currentStatus, activities: [], afk: false, since: null });
+
+  const isNewSong = song !== lastAppliedMusicTitle;
+  if (isNewSong) {
+    // New track: start the elapsed counter fresh.
+    musicElapsedMs = 0;
+    musicSegmentStart = isPaused ? 0 : Date.now();
+  } else if (isPaused && !lastAppliedMusicPaused) {
+    // Same track, just paused: fold the time since the segment started into the total,
+    // then stop the clock (segment start cleared so we don't double-count on the next call).
+    if (musicSegmentStart) musicElapsedMs += Date.now() - musicSegmentStart;
+    musicSegmentStart = 0;
+  } else if (!isPaused && lastAppliedMusicPaused) {
+    // Same track, resuming: start a fresh segment from now; musicElapsedMs already
+    // holds everything accumulated before the pause.
+    musicSegmentStart = Date.now();
+  }
+  // else: same track, same playback state (e.g. periodic re-poll) — leave timers as-is.
 
   $('act-type').value = '2';
   $('act-name').value = song || 'Music';
   $('act-details').value = artist || '';
   $('act-state').value = isPaused ? '⏸ Paused' : '';
+
+  // Only show an elapsed timer while actually playing — a frozen/absent timestamp
+  // while paused is what makes Discord's counter stop advancing during a pause.
+  if (isPaused) {
+    $('act-ts-start').value = '';
+  } else {
+    const effectiveStart = Date.now() - musicElapsedMs;
+    $('act-ts-start').value = toDateLocal(effectiveStart);
+  }
+  $('act-ts-end').value = '';
+
   const artwork = await fetchArtworkUrl(song, artist);
   if (artwork) {
     $('act-lg-img').value = artwork;
     $('act-lg-txt').value = song || '';
   } else {
-    // BUGFIX: if a previous song had artwork but this lookup fails, don't leave
-    // the old song's artwork attached to the new song's activity.
+    // BUGFIX #2: leave the large image field empty rather than pointing at any
+    // placeholder of our own — Discord's client renders its own default "?" art
+    // for an activity with no image, which is the desired fallback here.
     $('act-lg-img').value = '';
     $('act-lg-txt').value = '';
   }
@@ -593,7 +632,7 @@ async function applyMusicAsActivity(song, artist, isPaused = false) {
       artEl.textContent = '⚠️ Found album art but Discord rejected it: ' + lastLargeAssetResolveError;
       artEl.classList.remove('hidden');
     } else {
-      artEl.textContent = 'ℹ️ No album art found on iTunes for this track — activity applied without an image.';
+      artEl.textContent = 'ℹ️ No album art found — Discord will show its default icon for this activity.';
       artEl.classList.remove('hidden');
     }
   }
@@ -634,6 +673,25 @@ function updateNotifAccessStatus(enabled) {
     el.classList.remove('hidden');
   }
 }
+
+// BUGFIX #3: called by the native Android bridge (via NotificationListener's
+// MUSIC_STOPPED broadcast) when the music notification is swiped away/cleared.
+// Previously this only hid the "Now Playing" detector card and left the Discord
+// activity running indefinitely. Now it also actually clears the presence, same
+// as tapping "Stop music activity" manually — only if the currently-applied
+// activity was in fact the music one, so we don't clobber an unrelated manual activity.
+function onMusicNotificationCleared() {
+  musicDismissed = true;
+  lastMusicTitle = '';
+  $('music-detected-box').classList.add('hidden');
+  $('music-eq').style.display = 'none';
+  musicElapsedMs = 0;
+  musicSegmentStart = 0;
+  if (musicActivityActive) {
+    stopMusicActivity();
+  }
+}
+
 $('music-toggle').addEventListener('click',()=>setMusicEnabled(!musicEnabled));
 $('music-apply-btn').addEventListener('click',()=>applyMusicAsActivity($('music-song').textContent,$('music-artist').textContent));
 $('music-dismiss-btn').addEventListener('click',()=>{musicDismissed=true;$('music-detected-box').classList.add('hidden');$('music-eq').style.display='none';});
