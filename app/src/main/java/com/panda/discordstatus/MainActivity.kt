@@ -35,7 +35,7 @@ class MainActivity : AppCompatActivity() {
                 }
                 "MUSIC_STOPPED" -> {
                     webView.evaluateJavascript(
-                        "if(typeof musicDismissed!=='undefined'){musicDismissed=true;}",
+                        "if(typeof onMusicNotificationCleared==='function'){onMusicNotificationCleared();}",
                         null
                     )
                 }
