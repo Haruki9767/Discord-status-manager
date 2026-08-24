@@ -149,6 +149,7 @@
           <div class="music-title-row">
             <div class="music-eq" id="music-eq" style="display:none"><span></span><span></span><span></span></div>
             <span style="font-size:13px;font-weight:700">♪ Now Playing Detector</span>
+            <button class="btn btn-xs btn-ghost hidden" id="music-detector-enable-notif-btn" style="margin-left:6px">Enable notification access</button>
           </div>
           <label class="toggle-wrap"><span style="font-size:11px;color:var(--text2)">Auto-detect</span><div class="toggle" id="music-toggle"></div></label>
         </div>
@@ -173,7 +174,10 @@
         <div style="margin-top:8px;display:flex;justify-content:flex-end">
           <button class="btn btn-xs btn-danger-soft hidden" id="music-stop-btn">Stop music activity</button>
         </div>
-        <div id="notif-access-banner" class="music-note hidden" style="color:var(--yellow)"></div>
+        <div id="notif-access-banner" class="music-note hidden" style="color:var(--yellow);display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
+          <span id="notif-access-text"></span>
+          <button class="btn btn-xs btn-primary" id="notif-access-btn">Enable</button>
+        </div>
         <div class="music-note">⚠️ <strong>(Beta) Why auto-detect may not work:</strong> Browsers don't let one page read another tab's media. Auto-detect only works if <em>this tab</em> is playing audio, or on some <strong>Android</strong> browsers that share the system media session. For desktop apps (Spotify, Apple Music, etc.) and most PC browsers — use the <strong>manual entry</strong> above. It always works.</div>
       </div>
 
