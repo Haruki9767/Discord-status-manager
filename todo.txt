@@ -1,3 +1,4 @@
 1. Fix theme colors
 2. Add background all feature
 3. Add some cool shit
+4. Add more music app packages name
