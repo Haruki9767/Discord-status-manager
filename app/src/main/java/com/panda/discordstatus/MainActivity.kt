@@ -29,7 +29,8 @@ class MainActivity : AppCompatActivity() {
                 "MUSIC_UPDATED" -> {
                     val title = intent.getStringExtra("title") ?: return
                     val artist = intent.getStringExtra("artist") ?: ""
-                    val js = "applyMusicAsActivity(${JSONObject.quote(title)}, ${JSONObject.quote(artist)});"
+                    val isPaused = intent.getBooleanExtra("isPaused", false)
+                    val js = "applyMusicAsActivity(${JSONObject.quote(title)}, ${JSONObject.quote(artist)}, $isPaused);"
                     webView.evaluateJavascript(js, null)
                 }
                 "MUSIC_STOPPED" -> {
