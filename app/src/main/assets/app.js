@@ -681,7 +681,7 @@ function updateNotifAccessStatus(enabled) {
     if (enabled) {
       el.classList.add('hidden');
     } else {
-      if (textEl) textEl.textContent = '⚠️ Notification access is off — auto-detect for Spotify/YouTube Music won\'t work.';
+      if (textEl) textEl.textContent = '⚠️ Notification access is off — auto-detect for Music won\'t work.';
       el.classList.remove('hidden');
     }
   }
