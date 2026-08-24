@@ -12,12 +12,12 @@ const LIME_EXTERNAL_ASSET_APP_ID = '962990036020756480';
 // ═══════════ THEME ═══════════
 const THEMES = ['kawaii','dark','light','sanrio','cyberpunk','minimal'];
   function applyTheme(theme) {
-    const safe = THEMES.includes(theme) ? theme : 'kawaii';
+    const safe = THEMES.includes(theme) ? theme : 'dark';
     document.documentElement.className = safe === 'dark' ? '' : safe;
     localStorage.setItem('ds_theme', safe);
     document.querySelectorAll('.theme-choice').forEach(s => s.classList.toggle('active', s.dataset.theme === safe));
   }
-  function initTheme() { const s = localStorage.getItem('ds_theme') || 'kawaii'; applyTheme(s); }
+  function initTheme() { const s = localStorage.getItem('ds_theme') || 'dark'; applyTheme(s); }
   initTheme();
   $('theme-orb-btn').addEventListener('click', e => { e.stopPropagation(); $('theme-orb').classList.toggle('open'); });
   document.querySelectorAll('.theme-choice').forEach(btn => btn.addEventListener('click', () => { applyTheme(btn.dataset.theme); $('theme-orb').classList.remove('open'); }));
@@ -448,6 +448,7 @@ function showDashboard(){$('login-page').style.display='none';$('dashboard-page'
 // ═══════════ MUSIC DETECTOR ═══════════
 let musicEnabled=false, musicPollTimer=null, lastMusicTitle='', musicDismissed=false;
 let musicActivityActive=false; // BUGFIX: tracks whether a music-driven activity is currently applied
+let lastAppliedMusicTitle='', lastAppliedMusicPaused=false; // tracks pause/resume for the currently-applied song
 function setMusicEnabled(v){
   musicEnabled=v;$('music-toggle').classList.toggle('on',v);
   if(v){musicPollTimer=setInterval(pollMusic,2000);pollMusic();}
@@ -458,11 +459,20 @@ function pollMusic(){
   if(!musicEnabled)return;
   try{
     const meta=navigator.mediaSession&&navigator.mediaSession.metadata;
+    const playbackState=navigator.mediaSession&&navigator.mediaSession.playbackState; // 'playing' | 'paused' | 'none'
     if(meta&&meta.title){
       const title=meta.title,artist=[meta.artist,meta.album].filter(Boolean).join(' · '),artwork=meta.artwork&&meta.artwork.length?meta.artwork[meta.artwork.length-1].src:null;
+      const isPaused = playbackState === 'paused';
       if(title!==lastMusicTitle){lastMusicTitle=title;musicDismissed=false;}
+      // Re-apply automatically when the play/pause state flips for the already-applied song,
+      // so the Discord activity reflects pause/resume without needing another manual tap.
+      if(musicActivityActive && title===lastAppliedMusicTitle && isPaused!==lastAppliedMusicPaused){
+        applyMusicAsActivity(title, artist, isPaused);
+      }
       if(!musicDismissed){
-        $('music-eq').style.display='flex';$('music-song').textContent=title;$('music-artist').textContent=artist||'Unknown artist';
+        $('music-eq').style.display=isPaused?'none':'flex';
+        $('music-song').textContent=title;
+        $('music-artist').textContent=(artist||'Unknown artist')+(isPaused?' · Paused':'');
         const artEl=$('music-art');
         if(artwork){artEl.innerHTML=`<img src="${artwork}" style="width:38px;height:38px;object-fit:cover" onerror="this.parentNode.textContent='🎵'" />`;}else{artEl.textContent='🎵';}
         $('music-detected-box').classList.remove('hidden');
@@ -470,7 +480,8 @@ function pollMusic(){
     } else {if(lastMusicTitle){lastMusicTitle='';$('music-detected-box').classList.add('hidden');$('music-eq').style.display='none';}}
   }catch{}
 }
-async function fetchArtworkUrl(song, artist) {
+// Primary: iTunes Search API (no key needed, generally reliable, high-res art).
+async function fetchArtworkFromItunes(song, artist) {
   try {
     const term = encodeURIComponent(`${song} ${artist}`.trim());
     const res = await fetch(`https://itunes.apple.com/search?term=${term}&media=music&limit=1`);
@@ -484,17 +495,67 @@ async function fetchArtworkUrl(song, artist) {
   return '';
 }
 
+// Backup #1: Deezer's public search API. No key required, CORS-friendly,
+// separate catalog from iTunes so it often finds tracks iTunes misses.
+async function fetchArtworkFromDeezer(song, artist) {
+  try {
+    const term = encodeURIComponent(`${song} ${artist}`.trim());
+    const res = await fetch(`https://api.deezer.com/search?q=${term}&limit=1`);
+    if (!res.ok) return '';
+    const data = await res.json();
+    const track = data.data && data.data[0];
+    const cover = track && track.album && (track.album.cover_xl || track.album.cover_big || track.album.cover_medium);
+    return cover || '';
+  } catch {}
+  return '';
+}
+
+// Backup #2: MusicBrainz + Cover Art Archive. Slower (two requests) but
+// covers a lot of catalog gaps, especially for less mainstream tracks.
+async function fetchArtworkFromMusicBrainz(song, artist) {
+  try {
+    const q = encodeURIComponent(`recording:"${song}" AND artist:"${artist}"`);
+    const mbRes = await fetch(`https://musicbrainz.org/ws/2/recording/?query=${q}&fmt=json&limit=1`, {
+      headers: { 'Accept': 'application/json' }
+    });
+    if (!mbRes.ok) return '';
+    const mbData = await mbRes.json();
+    const releaseId = mbData.recordings && mbData.recordings[0] &&
+      mbData.recordings[0].releases && mbData.recordings[0].releases[0] &&
+      mbData.recordings[0].releases[0].id;
+    if (!releaseId) return '';
+    const caaRes = await fetch(`https://coverartarchive.org/release/${releaseId}/front-500`, { method: 'HEAD' });
+    if (caaRes.ok) return `https://coverartarchive.org/release/${releaseId}/front-500`;
+  } catch {}
+  return '';
+}
+
+// Tries each artwork source in order until one returns a usable image.
+// Keeps applyMusicAsActivity simple — it just awaits this one function.
+async function fetchArtworkUrl(song, artist) {
+  const sources = [fetchArtworkFromItunes, fetchArtworkFromDeezer, fetchArtworkFromMusicBrainz];
+  for (const source of sources) {
+    const url = await source(song, artist);
+    if (url) return url;
+  }
+  return '';
+}
+
 // BUGFIX #1: clear any existing presence before applying the new music activity.
 // Without this, Discord can briefly show the old + new activity together (the
 // "two listening entries" bug), especially when songs change back-to-back.
-async function applyMusicAsActivity(song, artist) {
+// isPaused: when true, marks the activity as paused (Discord has no native paused
+// state for Rich Presence, so we surface it via a "⏸ Paused" state line and a
+// paused icon on the small image, which is the same convention official
+// integrations like Spotify use).
+async function applyMusicAsActivity(song, artist, isPaused = false) {
   if (gw && gw._state === 'connected') gw.clearPresence(currentStatus);
   if (Server.isActive()) await Server.updatePresence({ status: currentStatus, activities: [], afk: false, since: null });
 
   $('act-type').value = '2';
   $('act-name').value = song || 'Music';
   $('act-details').value = artist || '';
-  $('act-state').value = '';
+  $('act-state').value = isPaused ? '⏸ Paused' : '';
   const artwork = await fetchArtworkUrl(song, artist);
   if (artwork) {
     $('act-lg-img').value = artwork;
@@ -504,6 +565,16 @@ async function applyMusicAsActivity(song, artist) {
     // the old song's artwork attached to the new song's activity.
     $('act-lg-img').value = '';
     $('act-lg-txt').value = '';
+  }
+  // Small image shows a pause/play glyph so the paused state is visible even
+  // without reading the state line. Uses Discord's own generic CDN emoji assets
+  // so no app ID / uploaded asset is required.
+  if (isPaused) {
+    $('act-sm-img').value = 'https://cdn.discordapp.com/emojis/852860604073836564.png';
+    $('act-sm-txt').value = 'Paused';
+  } else {
+    $('act-sm-img').value = '';
+    $('act-sm-txt').value = '';
   }
   setActivityEnabled(true);
   onTypeChange();
@@ -530,6 +601,8 @@ async function applyMusicAsActivity(song, artist) {
   // BUGFIX #2: surface an in-app "stop" control specifically for the
   // music-driven activity, separate from the global Stop Everything panel.
   musicActivityActive = true;
+  lastAppliedMusicTitle = song || '';
+  lastAppliedMusicPaused = isPaused;
   const stopBtn = $('music-stop-btn');
   if (stopBtn) stopBtn.classList.remove('hidden');
 }
@@ -537,6 +610,8 @@ async function applyMusicAsActivity(song, artist) {
 // BUGFIX #2 (cont.): dedicated stop control for music-driven presence.
 function stopMusicActivityUI() {
   musicActivityActive = false;
+  lastAppliedMusicTitle = '';
+  lastAppliedMusicPaused = false;
   const stopBtn = $('music-stop-btn');
   if (stopBtn) stopBtn.classList.add('hidden');
 }
