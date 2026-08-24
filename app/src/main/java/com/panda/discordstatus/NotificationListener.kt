@@ -15,7 +15,10 @@ class NotificationListener : NotificationListenerService() {
         "com.google.android.apps.youtube.music",
         "com.google.android.music",
         "com.soundcloud.android",
-        "deezer.android.app"
+        "deezer.android.app",
+        "com.nikhil.yt",
+        "org.videolan.vlc",
+        "com.dywx.larkplayer"
     )
 
     private var lastTitle: String? = null
