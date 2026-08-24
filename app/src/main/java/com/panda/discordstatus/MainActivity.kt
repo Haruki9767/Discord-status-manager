@@ -43,6 +43,16 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+   
+    private inner class NativeBridge {
+        @JavascriptInterface
+        fun requestNotificationAccess() {
+            runOnUiThread {
+                startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
+            }
+        }
+    }
+
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -66,6 +76,8 @@ class MainActivity : AppCompatActivity() {
             javaScriptCanOpenWindowsAutomatically = true
             setSupportMultipleWindows(true)
         }
+
+        webView.addJavascriptInterface(NativeBridge(), "NativeBridge")
 
         webView.webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
@@ -109,9 +121,7 @@ class MainActivity : AppCompatActivity() {
             }
         )
 
-        if (!isNotificationServiceEnabled()) {
-            startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
-        }
+       
     }
 
     override fun onResume() {
