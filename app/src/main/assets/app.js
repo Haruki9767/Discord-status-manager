@@ -675,14 +675,30 @@ async function stopMusicActivity() {
 
 function updateNotifAccessStatus(enabled) {
   const el = $('notif-access-banner');
-  if (!el) return;
-  if (enabled) {
-    el.classList.add('hidden');
-  } else {
-    el.textContent = '⚠️ Notification access is disabled — auto-detect for Spotify/YouTube Music won\'t work. Enable it in your phone Settings, or use manual entry below.';
-    el.classList.remove('hidden');
+  const textEl = $('notif-access-text');
+  const musicBtn = $('music-detector-enable-notif-btn');
+  if (el) {
+    if (enabled) {
+      el.classList.add('hidden');
+    } else {
+      if (textEl) textEl.textContent = '⚠️ Notification access is off — auto-detect for Spotify/YouTube Music won\'t work.';
+      el.classList.remove('hidden');
+    }
+  }
+  if (musicBtn) musicBtn.classList.toggle('hidden', enabled);
+}
+// Both prompts (the banner and the in-card button) call the same native bridge
+// method — the app no longer auto-launches the notification-access settings
+// screen on startup. It only opens when the user explicitly taps one of these.
+function requestNotificationAccess() {
+  if (window.NativeBridge && typeof window.NativeBridge.requestNotificationAccess === 'function') {
+    window.NativeBridge.requestNotificationAccess();
   }
 }
+const notifAccessBtn = $('notif-access-btn');
+if (notifAccessBtn) notifAccessBtn.addEventListener('click', requestNotificationAccess);
+const musicDetectorNotifBtn = $('music-detector-enable-notif-btn');
+if (musicDetectorNotifBtn) musicDetectorNotifBtn.addEventListener('click', requestNotificationAccess);
 
 // BUGFIX #3: called by the native Android bridge (via NotificationListener's
 // MUSIC_STOPPED broadcast) when the music notification is swiped away/cleared.
