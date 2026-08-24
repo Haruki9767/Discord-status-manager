@@ -18,7 +18,16 @@ class NotificationListener : NotificationListenerService() {
         "deezer.android.app",
         "com.nikhil.yt",
         "org.videolan.vlc",
-        "com.dywx.larkplayer"
+        "com.dywx.larkplayer",
+        "com.amazon.mp3",
+        "com.pandora.android",
+        "fm.last.android",
+        "com.kugou.android",
+        "com.tencent.qqmusic",
+        "com.netrelease.cloudmusic",
+        "com.apple.android.music",
+        "com.aspiro.tidal",
+        "com.github.soundpod",
     )
 
     private var lastTitle: String? = null
