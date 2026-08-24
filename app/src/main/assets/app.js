@@ -266,9 +266,19 @@ const Server={
   async function stopEverything(opts={}){
     const keepGateway=opts.disconnectGateway===false;
     const status=currentStatus||'online';
+    // BUGFIX: explicitly clear the presence on the server BEFORE tearing down the
+    // session. Previously stopSession() just deleted the session record — if the
+    // backend doesn't clear the gateway presence on session teardown, Discord can
+    // keep showing the last-set activity indefinitely since no "going offline"
+    // update was ever sent. Clearing first guarantees Discord sees an empty
+    // activity list at least once, regardless of how the server handles deletion.
+    if(Server.isActive())await Server.updatePresence({status,activities:[],afk:false,since:null});
     if(Server.isActive())await Server.stopSession();
     await stopStoredServerSession();
-    if(gw&&gw._state==='connected')gw.clearPresence(status);
+    // Always attempt to clear the browser gateway's presence too, not just when
+    // it's currently 'connected' — clearPresence() itself already checks readyState
+    // before sending, so this is safe to call regardless of state.
+    if(gw)gw.clearPresence(status);
     if(gw&&!keepGateway){gw.disconnect();gw=null;}
     localStorage.removeItem('ds_session_id');localStorage.removeItem('ds_session_expires');
     if(timerInterval){clearInterval(timerInterval);timerInterval=null;}
@@ -971,7 +981,7 @@ $('ts-now-btn').addEventListener('click',()=>{const now=new Date();now.setSecond
 $('ts-clear-btn').addEventListener('click',()=>{$('act-ts-start').value='';$('act-ts-end').value='';updatePreview();});
 $('add-btn-btn').addEventListener('click',()=>addButton());
 $('apply-btn').addEventListener('click',()=>applyPresence());
-$('clear-btn').addEventListener('click',async()=>{if(Server.isActive())await Server.updatePresence({status:currentStatus,activities:[],afk:false,since:null});if(gw&&gw._state==='connected')gw.clearPresence(currentStatus);isActive=false;setActivityEnabled(false);updateStatBar();stopMusicActivityUI();});
+$('clear-btn').addEventListener('click',async()=>{if(Server.isActive())await Server.updatePresence({status:currentStatus,activities:[],afk:false,since:null});if(gw)gw.clearPresence(currentStatus);isActive=false;setActivityEnabled(false);updateStatBar();stopMusicActivityUI();});
   $('stop-server-btn').addEventListener('click',async()=>{await stopEverything({disconnectGateway:false});});
   $('stop-all-btn').addEventListener('click',async()=>{await stopEverything({disconnectGateway:false});});
 $('profile-stop-btn').addEventListener('click',async()=>{await stopEverything({disconnectGateway:false});});
