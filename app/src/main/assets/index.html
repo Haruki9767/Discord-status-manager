@@ -8,8 +8,87 @@
 </head>
 <body>
 
+<!-- CONSENT GATE — must be accepted before any other screen is usable -->
+<div id="consent-page" style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 16px">
+  <div class="login-logo">
+    <svg viewBox="0 -28.5 256 256" xmlns="http://www.w3.org/2000/svg"><path d="M216.856,16.597C200.285,8.843 182.566,3.208 164.042,0C161.767,4.113 159.109,9.645 157.276,14.046C137.584,11.085 118.073,11.085 98.743,14.046C96.911,9.645 94.193,4.113 91.897,0C73.353,3.208 55.613,8.864 39.042,16.638C5.618,67.326 -3.443,116.749 1.087,165.449C23.256,181.706 44.740,191.546 65.862,198.023C71.077,190.970 75.728,183.416 79.735,175.449C72.104,172.659 64.795,169.200 57.889,165.097C59.721,163.758 61.513,162.360 63.245,160.923C106.229,180.410 152.955,180.410 195.389,160.923C197.121,162.360 198.913,163.758 200.724,165.097C193.798,169.221 186.469,172.680 178.818,175.449C182.825,183.416 187.456,190.970 192.671,198.023C213.813,191.546 235.318,181.706 257.407,165.449C262.328,109.433 248.203,60.437 216.856,16.597ZM85.474,135.095C72.829,135.095 62.459,123.290 62.459,108.915C62.459,94.540 72.629,82.715 85.474,82.715C98.319,82.715 108.709,94.519 108.489,108.915C108.509,123.290 98.319,135.095 85.474,135.095ZM170.525,135.095C157.880,135.095 147.511,123.290 147.511,108.915C147.511,94.540 157.680,82.715 170.525,82.715C183.370,82.715 193.761,94.519 193.540,108.915C193.540,123.290 183.370,135.095 170.525,135.095Z"/></svg>
+  </div>
+  <div class="login-box">
+    <div class="login-title">Before you continue</div>
+    <div class="login-sub">Please review and accept these to use Discord Status Manager</div>
+    <div class="card">
+      <div style="max-height:340px;overflow-y:auto;padding-right:6px;font-size:12px;line-height:1.6;color:var(--text2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:16px" id="consent-scroll">
+
+        <div style="font-weight:700;color:var(--text);font-size:13px;margin-bottom:6px">Privacy Policy</div>
+        <div style="margin-bottom:4px;color:var(--text3);font-size:11px">Last Updated: August 24, 2026</div>
+        <p style="margin-bottom:10px">Discord Status Manager ("the App") is developed and maintained by Haruki9767. This Privacy Policy explains what information the App collects, how it is handled, and what happens when the App interacts with third-party services.</p>
+
+        <div style="font-weight:600;color:var(--text);margin-bottom:4px">Information We Collect</div>
+        <p style="margin-bottom:10px">Discord Status Manager is designed to operate without intentionally collecting, selling, or monetizing personal information. The App does not intentionally collect names, usernames, email addresses, passwords, phone numbers, precise location data, contacts, photos or personal files, usage analytics or behavioral profiles, advertising identifiers, or tracking information.</p>
+
+        <div style="font-weight:600;color:var(--text);margin-bottom:4px">Information Stored on Your Device</div>
+        <p style="margin-bottom:10px">The App may store configuration and preference data locally on your device — status configuration, custom text, image or asset selections, button configuration, timestamp settings, and application preferences. This is stored locally unless a feature explicitly requires transmitting it to another service.</p>
+
+        <div style="font-weight:600;color:var(--text);margin-bottom:4px">Third-Party Services</div>
+        <p style="margin-bottom:10px">The App may communicate with third-party services, including Discord. These services operate independently and may collect, process, store, or handle information according to their own privacy policies. Haruki9767 does not control third-party privacy practices, data retention, or security.</p>
+
+        <div style="font-weight:600;color:var(--text);margin-bottom:4px">Discord</div>
+        <p style="margin-bottom:10px">Your use of Discord remains subject to Discord's own Terms of Service and Privacy Policy. The App is not affiliated with, sponsored by, or endorsed by Discord.</p>
+
+        <div style="font-weight:600;color:var(--text);margin-bottom:4px">Analytics, Tracking &amp; Advertising</div>
+        <p style="margin-bottom:10px">The App does not intentionally include advertising trackers, behavioral tracking, or analytics designed to profile users, and does not display ads or sell personal information.</p>
+
+        <div style="font-weight:600;color:var(--text);margin-bottom:4px">Data Security</div>
+        <p style="margin-bottom:10px">No software can guarantee absolute security. You are responsible for maintaining the security of your device, accounts, credentials, and installed software.</p>
+
+        <div style="font-weight:600;color:var(--text);margin-bottom:4px">Unofficial and Modified Versions</div>
+        <p style="margin-bottom:10px">This policy applies to the official App. Forks, modified builds, repackaged applications, unofficial APKs, and mirrors may differ, and the Licensor does not control or guarantee their privacy practices.</p>
+
+        <div style="font-weight:600;color:var(--text);margin-bottom:4px">Children's Privacy</div>
+        <p style="margin-bottom:10px">The App is not intentionally designed to collect personal information from children. Parents or guardians remain responsible for determining whether the App and connected third-party services are appropriate for a child.</p>
+
+        <div style="font-weight:600;color:var(--text);margin-bottom:4px">Changes &amp; Contact</div>
+        <p style="margin-bottom:16px">This policy may be updated as the App changes; the latest version is published through the official project repository. For privacy questions, contact Haruki9767 through the official repository.</p>
+
+        <div style="height:1px;background:var(--border);margin:16px 0"></div>
+
+        <div style="font-weight:700;color:var(--text);font-size:13px;margin-bottom:6px">Terms of Service</div>
+        <div style="margin-bottom:4px;color:var(--text3);font-size:11px">Last Updated: August 24, 2026</div>
+        <p style="margin-bottom:10px">Discord Status Manager ("the App") is developed and maintained by Haruki9767 and verified contributors. By downloading, installing, accessing, or using the App, you agree to these Terms. If you do not agree, do not use the App.</p>
+
+        <div style="font-weight:600;color:var(--text);margin-bottom:4px">Permitted &amp; Prohibited Use</div>
+        <p style="margin-bottom:10px">You may use, modify, fork, compile, and redistribute the App subject to the Discord Status Manager Source-Available Non-Commercial License and applicable law. You must not use the App for unlawful activity, malware distribution, security circumvention, impersonation, misrepresenting unofficial versions as official, or violating third-party rights or the license's non-commercial restrictions.</p>
+
+        <div style="font-weight:600;color:var(--text);margin-bottom:4px">Discord and Third-Party Services</div>
+        <p style="margin-bottom:10px">You are responsible for complying with the terms and policies of any third-party services you use with the App. Haruki9767 does not control third-party services and does not guarantee continued compatibility. The App does not grant permission to violate Discord's Terms of Service.</p>
+
+        <div style="font-weight:600;color:var(--text);margin-bottom:4px">Accounts and Credentials</div>
+        <p style="margin-bottom:10px">You are responsible for the security of your own accounts and credentials. Haruki9767 and verified contributors are not responsible for account compromise resulting from user negligence, unofficial versions, third-party services, compromised devices, malicious software, or shared credentials.</p>
+
+        <div style="font-weight:600;color:var(--text);margin-bottom:4px">No Warranty &amp; Limitation of Liability</div>
+        <p style="margin-bottom:10px">THE APP IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTY OF ANY KIND, TO THE MAXIMUM EXTENT PERMITTED BY LAW. Haruki9767 and verified contributors are not liable for data loss, account loss or restriction, device or software damage, security incidents, loss of profits, service interruptions, compatibility problems, third-party or Discord account actions, or issues from unofficial versions, except where such limitation is prohibited by law.</p>
+
+        <div style="font-weight:600;color:var(--text);margin-bottom:4px">Updates, Contributions &amp; IP</div>
+        <p style="margin-bottom:10px">Features may be modified, updated, or discontinued at any time. Contributions are welcome subject to the applicable license; submission does not guarantee inclusion in an Official Release. The App, branding, and original materials are protected by applicable IP law; your rights are governed by the applicable software license.</p>
+
+        <div style="font-weight:600;color:var(--text);margin-bottom:4px">No Discord Affiliation</div>
+        <p style="margin-bottom:10px">Discord Status Manager is an independent project and is not affiliated with, sponsored by, endorsed by, or officially connected to Discord Inc.</p>
+
+        <div style="font-weight:600;color:var(--text);margin-bottom:4px">Termination, Changes &amp; Contact</div>
+        <p style="margin-bottom:0">Violating these Terms or the applicable license may terminate your permission to use the App where permitted by law. These Terms may be updated; continued use after an update constitutes acceptance to the extent permitted by law. For questions, contact Haruki9767 through the official project repository.</p>
+
+      </div>
+      <label style="display:flex;align-items:flex-start;gap:9px;cursor:pointer;margin-bottom:14px;font-size:12px;color:var(--text2);line-height:1.5">
+        <input type="checkbox" id="consent-checkbox" style="width:auto;margin-top:2px;flex-shrink:0" />
+        <span>I have read and agree to the <strong style="color:var(--text)">Privacy Policy</strong> and <strong style="color:var(--text)">Terms of Service</strong> above.</span>
+      </label>
+      <button class="btn btn-primary" style="width:100%" id="consent-accept-btn" disabled>Agree &amp; Continue</button>
+    </div>
+  </div>
+</div>
+
 <!-- LOGIN -->
-<div id="login-page">
+<div id="login-page" class="hidden">
   <div class="login-logo">
     <svg viewBox="0 -28.5 256 256" xmlns="http://www.w3.org/2000/svg"><path d="M216.856,16.597C200.285,8.843 182.566,3.208 164.042,0C161.767,4.113 159.109,9.645 157.276,14.046C137.584,11.085 118.073,11.085 98.743,14.046C96.911,9.645 94.193,4.113 91.897,0C73.353,3.208 55.613,8.864 39.042,16.638C5.618,67.326 -3.443,116.749 1.087,165.449C23.256,181.706 44.740,191.546 65.862,198.023C71.077,190.970 75.728,183.416 79.735,175.449C72.104,172.659 64.795,169.200 57.889,165.097C59.721,163.758 61.513,162.360 63.245,160.923C106.229,180.410 152.955,180.410 195.389,160.923C197.121,162.360 198.913,163.758 200.724,165.097C193.798,169.221 186.469,172.680 178.818,175.449C182.825,183.416 187.456,190.970 192.671,198.023C213.813,191.546 235.318,181.706 257.407,165.449C262.328,109.433 248.203,60.437 216.856,16.597ZM85.474,135.095C72.829,135.095 62.459,123.290 62.459,108.915C62.459,94.540 72.629,82.715 85.474,82.715C98.319,82.715 108.709,94.519 108.489,108.915C108.509,123.290 98.319,135.095 85.474,135.095ZM170.525,135.095C157.880,135.095 147.511,123.290 147.511,108.915C147.511,94.540 157.680,82.715 170.525,82.715C183.370,82.715 193.761,94.519 193.540,108.915C193.540,123.290 183.370,135.095 170.525,135.095Z"/></svg>
   </div>
@@ -29,7 +108,7 @@
         <label class="field-label">Server URL <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text3)">(for 24/7 mode)</span></label>
         <input type="text" id="server-url-input" placeholder="https://activity-twentyfour.onrender.com/api" />
         <div class="test-row">
-          <button class="btn btn-sm btn-ghost" id="test-server-btn" style="font-size:11px;padding:4px 11px">Test Connection</button>
+          <button class="btn btn-sm btn-ghost" id="test-server-btn" style="font-size:11px;padding:4px 11px">⚡ Test Connection</button>
           <span id="test-result" class="hidden"></span>
         </div>
         <div class="hint" style="margin-top:4px">Leave blank for browser-only mode (presence stops when you close this tab).</div>
@@ -48,7 +127,7 @@
           <li>Go to <strong>Application</strong> tab → Local Storage → discord.com</li>
           <li>Find the key named <strong>token</strong> and copy the value</li>
         </ol>
-        <p class="note">Your token never leaves your browser except to the server URL you configure above. Make sure you trust your server. We are not responsible for any loss</p>
+        <p class="note">Your token never leaves your browser except to the server URL you configure above.</p>
       </div>
     </div>
   </div>
@@ -178,7 +257,7 @@
           <span id="notif-access-text"></span>
           <button class="btn btn-xs btn-primary" id="notif-access-btn">Enable</button>
         </div>
-        <div class="music-note"> <strong>Auto-detect might not work sometimes as we do not have all music apps packages name or the images might not load.</strong></div>
+        <div class="music-note">⚠️ <strong>(Beta) Why auto-detect may not work:</strong> Browsers don't let one page read another tab's media. Auto-detect only works if <em>this tab</em> is playing audio, or on some <strong>Android</strong> browsers that share the system media session. For desktop apps (Spotify, Apple Music, etc.) and most PC browsers — use the <strong>manual entry</strong> above. It always works.</div>
       </div>
 
       <!-- AFK Auto-Idle -->
@@ -262,7 +341,7 @@
           <div style="margin-bottom:11px">
             <label class="field-label">Application ID (optional)</label>
             <input type="text" id="act-appid" placeholder="Needed for uploaded Discord app assets" />
-            <div class="hint">From the Discord Developer Portal. Use this with uploaded Rich Presence assets; third-party web image URLs only preview here and will not render in Discord.</div>
+            <div class="hint">From the Discord Developer Portal. Use this with uploaded Rich Presence assets; normal web image URLs only preview here and will not render in Discord.</div>
           </div>
           <div class="img-appid-warn" id="img-appid-warn">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
