@@ -9,6 +9,42 @@ function normalizeApiUrl(url) {
 const DEFAULT_API = 'https://activity-twentyfour.onrender.com/api';
 const LIME_EXTERNAL_ASSET_APP_ID = '962990036020756480';
 
+// ═══════════ CONSENT GATE ═══════════
+// Must be accepted before login/dashboard become reachable. Bump this version
+// string if the Privacy Policy or Terms of Service text changes materially —
+// that forces previously-consenting users to review and accept again.
+const CONSENT_VERSION = '2026-08-24';
+function hasAcceptedConsent() {
+  return localStorage.getItem('ds_consent_version') === CONSENT_VERSION;
+}
+function showConsentGate() {
+  $('consent-page').classList.remove('hidden');
+  $('login-page').classList.add('hidden');
+  $('dashboard-page').style.display = 'none';
+}
+function hideConsentGate() {
+  $('consent-page').classList.add('hidden');
+}
+function initConsentGate() {
+  if (hasAcceptedConsent()) {
+    hideConsentGate();
+    return true;
+  }
+  showConsentGate();
+  const checkbox = $('consent-checkbox');
+  const acceptBtn = $('consent-accept-btn');
+  if (checkbox && acceptBtn) {
+    checkbox.addEventListener('change', () => { acceptBtn.disabled = !checkbox.checked; });
+    acceptBtn.addEventListener('click', () => {
+      if (!checkbox.checked) return;
+      localStorage.setItem('ds_consent_version', CONSENT_VERSION);
+      hideConsentGate();
+      showLogin();
+    });
+  }
+  return false;
+}
+
 // ═══════════ THEME ═══════════
 const THEMES = ['kawaii','dark','light','sanrio','cyberpunk','minimal'];
   function applyTheme(theme) {
@@ -452,8 +488,8 @@ function checkImgAppId(){
   const warn=$('img-appid-warn');
   warn.style.display=((hasLgImg&&!hasAppId)||(hasSmImg&&!hasSmAppId&&!hasAppId))?'flex':'none';
 }
-function showLogin(){$('login-page').style.display='flex';$('dashboard-page').style.display='none';}
-function showDashboard(){$('login-page').style.display='none';$('dashboard-page').style.display='flex';renderPresets();updateStatBar();}
+function showLogin(){$('login-page').classList.remove('hidden');$('login-page').style.display='flex';$('dashboard-page').style.display='none';}
+function showDashboard(){$('login-page').classList.add('hidden');$('login-page').style.display='none';$('dashboard-page').style.display='flex';renderPresets();updateStatBar();}
 
 // ═══════════ MUSIC DETECTOR ═══════════
 let musicEnabled=false, musicPollTimer=null, lastMusicTitle='', musicDismissed=false;
@@ -681,7 +717,7 @@ function updateNotifAccessStatus(enabled) {
     if (enabled) {
       el.classList.add('hidden');
     } else {
-      if (textEl) textEl.textContent = '⚠️ Notification access is off — auto-detect for Music won\'t work.';
+      if (textEl) textEl.textContent = '⚠️ Notification access is off — auto-detect for Spotify/YouTube Music won\'t work.';
       el.classList.remove('hidden');
     }
   }
@@ -1128,6 +1164,13 @@ const restorePrebuiltBtn=$('restore-prebuilt-btn');
 // ═══════════ AUTO-RESTORE ═══════════
 (function(){
   if(localStorage.getItem('ds_prebuilt_seeded_v4')!=='1'||!PREBUILT_PRESETS.every(bp=>presets.some(p=>p.name===bp.name))){addPrebuiltPresets(false);localStorage.setItem('ds_prebuilt_seeded_v4','1');}
+  renderPresets();renderRotationPresets();renderRules();updateProfileActivity();
+
+  // Consent must be accepted before the login/reconnect flow runs. If the user
+  // hasn't consented yet, initConsentGate() shows the gate and wires up the
+  // Accept button; we stop here rather than auto-reconnecting behind it.
+  if (!initConsentGate()) return;
+
     const token=localStorage.getItem('ds_token'),sessionId=localStorage.getItem('ds_session_id'),expires=Number(localStorage.getItem('ds_session_expires')||0);
   const rawBase=localStorage.getItem('ds_api_base')||DEFAULT_API,apiBase=normalizeApiUrl(rawBase);
   if(rawBase!==apiBase)localStorage.setItem('ds_api_base',apiBase);
@@ -1144,7 +1187,8 @@ const restorePrebuiltBtn=$('restore-prebuilt-btn');
     $('menu-avatar').src='https://cdn.discordapp.com/embed/avatars/0.png';
     $('username-text').textContent='Reconnecting…';$('profile-card-name').textContent='Reconnecting…';$('profile-card-id').textContent='Fetching Discord profile…';
     connectGateway(token,apiBase,false);
+  } else {
+    showLogin();
   }
-  renderPresets();renderRotationPresets();renderRules();updateProfileActivity();
 })();
 window.addEventListener('beforeunload',()=>{try{if(gw&&gw._state==='connected'&&!Server.isActive())gw.clearPresence(currentStatus);}catch{}});
