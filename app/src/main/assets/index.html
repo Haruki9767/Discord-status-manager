@@ -458,15 +458,12 @@
     <div style="display:flex;flex-direction:column;gap:14px">
 
       <!-- Presets -->
-<div class="card">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-    <div class="card-title" style="margin-bottom:0"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>Presets</div>
-    <span id="preset-count" style="font-size:11px;color:var(--text3);background:var(--surface3);padding:2px 7px;border-radius:20px">0</span>
-  </div>
-  <div style="font-size:11px;color:var(--text3);background:var(--surface3);border-radius:8px;padding:6px 9px;margin-bottom:10px;line-height:1.4">
-    ⚠️ Import/Export only works in a web browser — not inside this mobile app.
-  </div>
-  <div class="preset-io-row">
+	<div class="card">
+	  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+	    <div class="card-title" style="margin-bottom:0"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>Presets</div>
+	    <span id="preset-count" style="font-size:11px;color:var(--text3);background:var(--surface3);padding:2px 7px;border-radius:20px">0</span>
+	  </div>
+	  <div class="preset-io-row">
     <button class="btn btn-ghost" id="export-presets-btn" title="Export presets to JSON file">↑ Export</button>
     <label class="btn btn-ghost" style="cursor:pointer" title="Import presets from JSON file">↓ Import<input type="file" id="import-presets-input" accept=".json" style="display:none" /></label>
   </div>
