@@ -937,11 +937,18 @@ $('rotation-toggle').addEventListener('click',()=>setRotationEnabled(!rotationEn
 // ═══════════ EXPORT / IMPORT PRESETS ═══════════
 $('export-presets-btn').addEventListener('click',()=>{
   if(!presets.length){alert('No presets to export.');return;}
-  const blob=new Blob([JSON.stringify(presets,null,2)],{type:'application/json'});
+  const json=JSON.stringify(presets,null,2);
+  if(window.NativeBridge&&typeof NativeBridge.exportPresets==='function'){
+    NativeBridge.exportPresets(json);
+    return;
+  }
+  const blob=new Blob([json],{type:'application/json'});
   const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');a.href=url;a.download='discord-presets.json';a.click();
-  URL.revokeObjectURL(url);
+  const a=document.createElement('a');a.href=url;a.download='discord-presets.json';
+  document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
 });
+window.nativeExportComplete=ok=>alert(ok?'Presets exported successfully.':'Could not save presets.');
 $('import-presets-input').addEventListener('change',e=>{
   const file=e.target.files[0];if(!file)return;
   const reader=new FileReader();

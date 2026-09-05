@@ -9,15 +9,24 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Message
 import android.provider.Settings
-import android.webkit.*
+import android.webkit.JavascriptInterface
+import android.webkit.ValueCallback
+import android.webkit.WebChromeClient
+import android.webkit.WebResourceRequest
+import android.webkit.WebSettings
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.appcompat.app.AppCompatActivity
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import org.json.JSONObject
+import java.io.IOException
 
 class MainActivity : AppCompatActivity() {
-
     private lateinit var webView: WebView
-
+    private var filePathCallback: ValueCallback<Array<Uri>>? = null
+    private var pendingExportJson: String? = null
+    private val createDocumentRequestCode = 1001
+    private val openDocumentRequestCode = 1002
     private val externalDomains = listOf("discord.gg", "discord-activity.cc.cd")
 
     private fun isExternalLink(url: String) = externalDomains.any { url.contains(it) }
@@ -30,26 +39,36 @@ class MainActivity : AppCompatActivity() {
                     val title = intent.getStringExtra("title") ?: return
                     val artist = intent.getStringExtra("artist") ?: ""
                     val isPaused = intent.getBooleanExtra("isPaused", false)
-                    val js = "applyMusicAsActivity(${JSONObject.quote(title)}, ${JSONObject.quote(artist)}, $isPaused);"
-                    webView.evaluateJavascript(js, null)
-                }
-                "MUSIC_STOPPED" -> {
                     webView.evaluateJavascript(
-                        "if(typeof onMusicNotificationCleared==='function'){onMusicNotificationCleared();}",
-                        null
+                        "applyMusicAsActivity(${JSONObject.quote(title)}, ${JSONObject.quote(artist)}, $isPaused);",
+                        null,
                     )
                 }
+                "MUSIC_STOPPED" -> webView.evaluateJavascript(
+                    "if(typeof onMusicNotificationCleared==='function'){onMusicNotificationCleared();}",
+                    null,
+                )
             }
         }
     }
 
-   
     private inner class NativeBridge {
         @JavascriptInterface
-        fun requestNotificationAccess() {
-            runOnUiThread {
-                startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
-            }
+        fun requestNotificationAccess() = runOnUiThread {
+            startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
+        }
+
+        @JavascriptInterface
+        fun exportPresets(json: String) = runOnUiThread {
+            pendingExportJson = json
+            startActivityForResult(
+                Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+                    addCategory(Intent.CATEGORY_OPENABLE)
+                    type = "application/json"
+                    putExtra(Intent.EXTRA_TITLE, "discord-presets.json")
+                },
+                createDocumentRequestCode,
+            )
         }
     }
 
@@ -57,9 +76,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
         webView = findViewById(R.id.webView)
-
         webView.settings.apply {
             javaScriptEnabled = true
             domStorageEnabled = true
@@ -76,9 +93,7 @@ class MainActivity : AppCompatActivity() {
             javaScriptCanOpenWindowsAutomatically = true
             setSupportMultipleWindows(true)
         }
-
         webView.addJavascriptInterface(NativeBridge(), "NativeBridge")
-
         webView.webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
                 val url = request.url.toString()
@@ -89,14 +104,30 @@ class MainActivity : AppCompatActivity() {
                 return false
             }
         }
-
         webView.webChromeClient = object : WebChromeClient() {
-            override fun onCreateWindow(
+            override fun onShowFileChooser(
                 view: WebView,
-                isDialog: Boolean,
-                isUserGesture: Boolean,
-                resultMsg: Message
+                callback: ValueCallback<Array<Uri>>,
+                fileChooserParams: FileChooserParams,
             ): Boolean {
+                filePathCallback?.onReceiveValue(null)
+                filePathCallback = callback
+                return try {
+                    startActivityForResult(
+                        fileChooserParams.createIntent().apply {
+                            type = "application/json"
+                            putExtra(Intent.EXTRA_MIME_TYPES, arrayOf("application/json", "text/json", "text/plain"))
+                        },
+                        openDocumentRequestCode,
+                    )
+                    true
+                } catch (_: Exception) {
+                    filePathCallback = null
+                    false
+                }
+            }
+
+            override fun onCreateWindow(view: WebView, isDialog: Boolean, isUserGesture: Boolean, resultMsg: Message): Boolean {
                 val tempWebView = WebView(view.context)
                 tempWebView.webViewClient = object : WebViewClient() {
                     override fun shouldOverrideUrlLoading(tv: WebView, request: WebResourceRequest): Boolean {
@@ -104,31 +135,48 @@ class MainActivity : AppCompatActivity() {
                         return true
                     }
                 }
-                val transport = resultMsg.obj as WebView.WebViewTransport
-                transport.webView = tempWebView
+                (resultMsg.obj as WebView.WebViewTransport).webView = tempWebView
                 resultMsg.sendToTarget()
                 return true
             }
         }
-
         webView.loadUrl("file:///android_asset/index.html")
-
         LocalBroadcastManager.getInstance(this).registerReceiver(
             musicReceiver,
             IntentFilter().apply {
                 addAction("MUSIC_UPDATED")
                 addAction("MUSIC_STOPPED")
-            }
+            },
         )
+    }
 
-       
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == createDocumentRequestCode) {
+            val json = pendingExportJson
+            pendingExportJson = null
+            if (resultCode == RESULT_OK && data?.data != null && json != null) {
+                try {
+                    contentResolver.openOutputStream(data.data!!)?.use { it.write(json.toByteArray(Charsets.UTF_8)) }
+                        ?: throw IOException("Could not open destination")
+                    webView.evaluateJavascript("if(typeof nativeExportComplete==='function'){nativeExportComplete(true);}", null)
+                } catch (_: Exception) {
+                    webView.evaluateJavascript("if(typeof nativeExportComplete==='function'){nativeExportComplete(false);}", null)
+                }
+            }
+            return
+        }
+        if (requestCode == openDocumentRequestCode) {
+            val callback = filePathCallback
+            filePathCallback = null
+            callback?.onReceiveValue(if (resultCode == RESULT_OK && data?.data != null) arrayOf(data.data!!) else null)
+        }
     }
 
     override fun onResume() {
         super.onResume()
         val enabled = isNotificationServiceEnabled()
-        val js = "if(typeof updateNotifAccessStatus==='function'){updateNotifAccessStatus($enabled);}"
-        webView.evaluateJavascript(js, null)
+        webView.evaluateJavascript("if(typeof updateNotifAccessStatus==='function'){updateNotifAccessStatus($enabled);}", null)
     }
 
     private fun isNotificationServiceEnabled(): Boolean {
@@ -142,10 +190,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        if (webView.canGoBack()) {
-            webView.goBack()
-        } else {
-            super.onBackPressed()
-        }
+        if (webView.canGoBack()) webView.goBack() else super.onBackPressed()
     }
 }
