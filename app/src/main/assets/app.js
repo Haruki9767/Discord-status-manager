@@ -1,4 +1,3 @@
-// ═══════════ HELPERS ═══════════
 const $ = id => document.getElementById(id);
 function normalizeApiUrl(url) {
   if (!url) return url;
@@ -9,10 +8,6 @@ function normalizeApiUrl(url) {
 const DEFAULT_API = 'https://activity-twentyfour.onrender.com/api';
 const LIME_EXTERNAL_ASSET_APP_ID = '962990036020756480';
 
-// ═══════════ CONSENT GATE ═══════════
-// Must be accepted before login/dashboard become reachable. Bump this version
-// string if the Privacy Policy or Terms of Service text changes materially —
-// that forces previously-consenting users to review and accept again.
 const CONSENT_VERSION = '2026-08-24';
 function hasAcceptedConsent() {
   return localStorage.getItem('ds_consent_version') === CONSENT_VERSION;
@@ -45,7 +40,6 @@ function initConsentGate() {
   return false;
 }
 
-// ═══════════ THEME ═══════════
 const THEMES = ['kawaii','dark','light','sanrio','cyberpunk','minimal'];
   function applyTheme(theme) {
     const safe = THEMES.includes(theme) ? theme : 'dark';
@@ -59,7 +53,6 @@ const THEMES = ['kawaii','dark','light','sanrio','cyberpunk','minimal'];
   document.querySelectorAll('.theme-choice').forEach(btn => btn.addEventListener('click', () => { applyTheme(btn.dataset.theme); $('theme-orb').classList.remove('open'); }));
   document.addEventListener('click', e => { if ($('theme-orb') && !$('theme-orb').contains(e.target)) $('theme-orb').classList.remove('open'); });
 
-// ═══════════ SERVER TEST ═══════════
 async function testServerConnection(apiBase) {
   apiBase = normalizeApiUrl(apiBase);
   if (!apiBase) return;
@@ -77,7 +70,6 @@ async function testServerConnection(apiBase) {
 }
 $('test-server-btn').addEventListener('click',()=>testServerConnection($('server-url-input').value.trim()));
 
-// ═══════════ IMAGE URL FORMATTER ═══════════
   function isHttpUrl(value){return /^https?:\/\//i.test(value||'');}
   function cleanAssetKey(value){return String(value||'').trim().replace(/^asset:\/\//,'').replace(/^app-assets:\/\//,'').replace(/^mp:app-assets\/\d+\//,'');}
   function stripImgExt(key){return String(key||'').replace(/\.(?:png|jpe?g|webp|gif)(?:[?#].*)?$/i,'');}
@@ -164,7 +156,6 @@ $('test-server-btn').addEventListener('click',()=>testServerConnection($('server
         }
       }catch(e){lastAssetResolveError='Server proxy error: '+String(e.message||e).slice(0,80);}
     }
-    // Fallback: call Discord's external-assets endpoint directly from the client.
     try{
       const res=await fetch('https://discord.com/api/v9/applications/'+targetAppId+'/external-assets',{method:'POST',headers:{'Authorization':token,'Content-Type':'application/json'},body:JSON.stringify({urls:[url]})});
       if(!res.ok){
@@ -187,8 +178,6 @@ $('test-server-btn').addEventListener('click',()=>testServerConnection($('server
     const largeRaw=$('act-lg-img').value.trim();
     const smallRaw=$('act-sm-img').value.trim();
     const largeResolved=needsExternalAssetResolve(largeRaw)?await resolveExternalAssetUrl(largeRaw,appid):'';
-    // BUGFIX: capture the large-image error immediately after its own resolve call,
-    // before the small-image resolve call (below) overwrites the shared error variable.
     lastLargeAssetResolveError = largeResolved ? '' : lastAssetResolveError;
     const smallResolved=needsExternalAssetResolve(smallRaw)?await resolveExternalAssetUrl(smallRaw,smAppid):'';
     if(largeResolved||smallResolved){
@@ -199,7 +188,6 @@ $('test-server-btn').addEventListener('click',()=>testServerConnection($('server
     return p;
   }
 
-// ═══════════ PRESENCE BUILDER ═══════════
 function buildPresence() {
   const p={status:currentStatus,afk:false,since:null,activities:[]};
   if (activityEnabled) {
@@ -214,8 +202,6 @@ function buildPresence() {
     const smAppid=$('act-sm-appid').value.trim();
     const smRawVal=$('act-sm-img').value.trim();
     const li=formatPresenceImage($('act-lg-img').value.trim(),appid),lt=$('act-lg-txt').value.trim();
-    // If small image has its own app ID that differs from the main one, use the explicit
-    // mp:app-assets/APPID/KEY format so Discord resolves it against the correct application.
     let si;
     if(smAppid&&smAppid!==appid&&smRawVal&&!isHttpUrl(smRawVal)&&!smRawVal.startsWith('mp:')&&!smRawVal.startsWith('spotify:')){
       const key=stripImgExt(cleanAssetKey(smRawVal));
@@ -233,7 +219,6 @@ function buildPresence() {
   return p;
 }
 
-// ═══════════ DISCORD GATEWAY ═══════════
 class DiscordGateway {
   constructor(token){this.token=token;this.ws=null;this.seq=null;this.sessionId=null;this.resumeUrl=null;this.hbInterval=null;this.reconnectTimer=null;this.shouldReconnect=false;this.currentPresence=null;this.pendingPresence=null;this._state='disconnected';this.handlers={};}
   on(ev,fn){(this.handlers[ev]=this.handlers[ev]||[]).push(fn);}
@@ -276,7 +261,6 @@ class DiscordGateway {
   _cleanup(){if(this.hbInterval){clearInterval(this.hbInterval);this.hbInterval=null;}if(this.reconnectTimer){clearTimeout(this.reconnectTimer);this.reconnectTimer=null;}}
 }
 
-// ═══════════ SERVER CLIENT ═══════════
 const Server={
   baseUrl:null,sessionId:null,expiresAt:null,pollTimer:null,_token:null,
   init(u){this.baseUrl=normalizeApiUrl(u);},
@@ -302,24 +286,14 @@ const Server={
   async function stopEverything(opts={}){
     const keepGateway=opts.disconnectGateway===false;
     const status=currentStatus||'online';
-    // BUGFIX: explicitly clear the presence on the server BEFORE tearing down the
-    // session. Previously stopSession() just deleted the session record — if the
-    // backend doesn't clear the gateway presence on session teardown, Discord can
-    // keep showing the last-set activity indefinitely since no "going offline"
-    // update was ever sent. Clearing first guarantees Discord sees an empty
-    // activity list at least once, regardless of how the server handles deletion.
     if(Server.isActive())await Server.updatePresence({status,activities:[],afk:false,since:null});
     if(Server.isActive())await Server.stopSession();
     await stopStoredServerSession();
-    // Always attempt to clear the browser gateway's presence too, not just when
-    // it's currently 'connected' — clearPresence() itself already checks readyState
-    // before sending, so this is safe to call regardless of state.
     if(gw)gw.clearPresence(status);
     if(gw&&!keepGateway){gw.disconnect();gw=null;}
     localStorage.removeItem('ds_session_id');localStorage.removeItem('ds_session_expires');
     if(timerInterval){clearInterval(timerInterval);timerInterval=null;}
     if(rpElapsedTimer){clearInterval(rpElapsedTimer);rpElapsedTimer=null;}
-    // BUGFIX: also stop the music-driven activity indicator/state when stopping everything
     if (typeof stopMusicActivityUI === 'function') stopMusicActivityUI();
     isActive=false;setActivityEnabled(false);setBannerNoServer();updateConnBadge(gw?gw._state:'disconnected');updateStatBar();
   }
@@ -331,8 +305,6 @@ const Server={
     } else run.textContent='Running activity: none';
   }
 
-
-// ═══════════ APP STATE ═══════════
 let gw=null, currentStatus='online', activityEnabled=false, isActive=false;
 let buttonIds=[], presets=[], timerInterval=null, savedToken='', savedApiBase='';
 try{presets=JSON.parse(localStorage.getItem('ds_presets')||'[]');}catch{}
@@ -361,13 +333,11 @@ try{presets=JSON.parse(localStorage.getItem('ds_presets')||'[]');}catch{}
     presets.push(...toAdd);savePresets();renderPresets();renderRotationPresets();
   }
 
-
 function avatarUrl(u){try{if(!u.avatar)return`https://cdn.discordapp.com/embed/avatars/${Number(BigInt(u.id)>>22n)%6}.png`;return`https://cdn.discordapp.com/avatars/${u.id}/${u.avatar}.png?size=128`;}catch{return'https://cdn.discordapp.com/embed/avatars/0.png';}}
 function toDateLocal(ts){if(!ts)return'';const d=new Date(typeof ts==='number'?ts:Date.parse(ts));if(isNaN(d))return'';const pad=n=>String(n).padStart(2,'0');return`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;}
 function fmtDuration(ms){if(ms<=0)return'00:00:00';const h=Math.floor(ms/3600000),m=Math.floor((ms%3600000)/60000),s=Math.floor((ms%60000)/1000);return[h,m,s].map(n=>String(n).padStart(2,'0')).join(':');}
 function fmtMinsShort(ms){const h=Math.floor(ms/3600000),m=Math.floor((ms%3600000)/60000),s=Math.floor((ms%60000)/1000);return h>0?`${h}h ${String(m).padStart(2,'0')}m`:`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;}
 
-// ═══════════ BANNERS ═══════════
 function setBannerServerActive(expiresAt){
   $('ka-banner').className='keepalive-banner ka-server';$('ka-icon').className='ka-icon ka-icon-server';
   $('ka-icon').innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>';
@@ -398,7 +368,6 @@ function setBannerNoServer(){
   $('retry-url-input').value=DEFAULT_API;$('server-retry-row').classList.remove('hidden');updateStatBar();
 }
 
-// ═══════════ UI ═══════════
 function updateConnBadge(state){
   if(Server.isActive())return;const dot=$('conn-dot'),text=$('conn-text');
   const map={connected:['connected','Browser (no 24/7)','var(--yellow)'],connecting:['connecting','Connecting…','var(--yellow)'],disconnected:['disconnected','Disconnected','var(--text3)'],error:['error','Error','var(--red)']};
@@ -421,7 +390,6 @@ function updateStatBar(){
 async function applyPresence(){const p=await resolvePresenceImages(buildPresence());if(Server.isActive())await Server.updatePresence(p);if(gw&&gw._state==='connected')gw.updatePresence(p);isActive=!!(p.activities&&p.activities.length);updateStatBar();updateProfileActivity();}
 function setActivityEnabled(v){activityEnabled=v;$('activity-toggle').classList.toggle('on',v);$('activity-editor').classList.toggle('hidden',!v);$('activity-placeholder').classList.toggle('hidden',v);updatePreview();}
 
-// ═══════════ PRESENCE PREVIEW ═══════════
 const RP_TYPE_LABELS={0:'Playing',1:'Streaming',2:'Listening to',3:'Watching',5:'Competing in'};
 const RP_TYPE_ICONS={0:'🎮',1:'📺',2:'🎵',3:'👁️',5:'🏆'};
 let rpElapsedTimer=null;
@@ -443,7 +411,6 @@ function updatePreview(){
   const dlEl=$('rp-detail-line'),slEl=$('rp-state-line');
   if(details){dlEl.textContent=details;dlEl.style.display='';}else{dlEl.style.display='none';}
   if(state){slEl.textContent=state;slEl.style.display='';}else{slEl.style.display='none';}
-  // Large image — use raw URL for preview display (also reconstruct from mp: format)
   function previewSrc(raw, id){ return previewImageUrl(raw, id); }
   const lgEl=$('rp-lg'),lgPh=$('rp-lg-ph');
   const lgSrc=previewSrc(lgRaw, appid);
@@ -454,14 +421,12 @@ function updatePreview(){
     else if(lgEl.complete&&lgEl.naturalWidth>0){lgEl.style.display='block';lgPh.style.display='none';}
     else if(rpLgFailedSrc===lgSrc||lgEl.naturalWidth===0){lgEl.style.display='none';lgPh.style.display='flex';lgPh.textContent=RP_TYPE_ICONS[type]||'🎮';}
   }else{lgEl.style.display='none';lgPh.style.display='flex';lgPh.textContent=RP_TYPE_ICONS[type]||'🎮';}
-  // Small image
   const smEl=$('rp-sm');
   const smAppidPrev=$('act-sm-appid').value.trim()||appid;
   const smSrc=previewSrc(smRaw, smAppidPrev);
   if(smSrc){smEl.onload=()=>{rpSmFailedSrc='';smEl.style.display='block';};smEl.onerror=()=>{rpSmFailedSrc=smSrc;smEl.style.display='none';};if(smEl.getAttribute('src')!==smSrc){smEl.style.display='none';smEl.src=smSrc;}else if(smEl.complete&&smEl.naturalWidth>0){smEl.style.display='block';}else if(rpSmFailedSrc===smSrc||smEl.naturalWidth===0){smEl.style.display='none';}}
   else{smEl.style.display='none';}
   updateAssetStatus();
-  // Timestamps
   if(rpElapsedTimer){clearInterval(rpElapsedTimer);rpElapsedTimer=null;}
   const elEl=$('rp-elapsed');
   if(tsStart){
@@ -471,7 +436,6 @@ function updatePreview(){
     const tick=()=>{const now=Date.now();elEl.textContent=endMs?fmtDuration(Math.max(0,endMs-now))+' left':fmtDuration(Math.max(0,now-startMs))+' elapsed';};
     tick();rpElapsedTimer=setInterval(tick,1000);
   }else{elEl.style.display='none';}
-  // Buttons
   const btnsEl=$('rp-btns');
   const btns=[];for(let i=0;i<2;i++){const l=$(`btn-label-${i}`);if(l&&l.value.trim())btns.push(l.value.trim());}
   if(btns.length){btnsEl.style.display='';btnsEl.innerHTML=btns.map(b=>`<div class="rp-btn-item">${b.replace(/</g,'&lt;')}</div>`).join('');}
@@ -491,10 +455,9 @@ function checkImgAppId(){
 function showLogin(){$('login-page').classList.remove('hidden');$('login-page').style.display='flex';$('dashboard-page').style.display='none';}
 function showDashboard(){$('login-page').classList.add('hidden');$('login-page').style.display='none';$('dashboard-page').style.display='flex';renderPresets();updateStatBar();}
 
-// ═══════════ MUSIC DETECTOR ═══════════
 let musicEnabled=false, musicPollTimer=null, lastMusicTitle='', musicDismissed=false;
-let musicActivityActive=false; // BUGFIX: tracks whether a music-driven activity is currently applied
-let lastAppliedMusicTitle='', lastAppliedMusicPaused=false; // tracks pause/resume for the currently-applied song
+let musicActivityActive=false;
+let lastAppliedMusicTitle='', lastAppliedMusicPaused=false;
 function setMusicEnabled(v){
   musicEnabled=v;$('music-toggle').classList.toggle('on',v);
   if(v){musicPollTimer=setInterval(pollMusic,2000);pollMusic();}
@@ -505,13 +468,11 @@ function pollMusic(){
   if(!musicEnabled)return;
   try{
     const meta=navigator.mediaSession&&navigator.mediaSession.metadata;
-    const playbackState=navigator.mediaSession&&navigator.mediaSession.playbackState; // 'playing' | 'paused' | 'none'
+    const playbackState=navigator.mediaSession&&navigator.mediaSession.playbackState;
     if(meta&&meta.title){
       const title=meta.title,artist=[meta.artist,meta.album].filter(Boolean).join(' · '),artwork=meta.artwork&&meta.artwork.length?meta.artwork[meta.artwork.length-1].src:null;
       const isPaused = playbackState === 'paused';
       if(title!==lastMusicTitle){lastMusicTitle=title;musicDismissed=false;}
-      // Re-apply automatically when the play/pause state flips for the already-applied song,
-      // so the Discord activity reflects pause/resume without needing another manual tap.
       if(musicActivityActive && title===lastAppliedMusicTitle && isPaused!==lastAppliedMusicPaused){
         applyMusicAsActivity(title, artist, isPaused);
       }
@@ -526,7 +487,6 @@ function pollMusic(){
     } else {if(lastMusicTitle){lastMusicTitle='';$('music-detected-box').classList.add('hidden');$('music-eq').style.display='none';}}
   }catch{}
 }
-// Primary: iTunes Search API (no key needed, generally reliable, high-res art).
 async function fetchArtworkFromItunes(song, artist) {
   try {
     const term = encodeURIComponent(`${song} ${artist}`.trim());
@@ -534,15 +494,12 @@ async function fetchArtworkFromItunes(song, artist) {
     if (!res.ok) return '';
     const data = await res.json();
     if (data.results && data.results.length) {
-      // iTunes gives 100x100 by default; bump to 512x512 for a sharper image
       return data.results[0].artworkUrl100.replace('100x100bb', '512x512bb');
     }
   } catch {}
   return '';
 }
 
-// Backup #1: Deezer's public search API. No key required, CORS-friendly,
-// separate catalog from iTunes so it often finds tracks iTunes misses.
 async function fetchArtworkFromDeezer(song, artist) {
   try {
     const term = encodeURIComponent(`${song} ${artist}`.trim());
@@ -556,8 +513,6 @@ async function fetchArtworkFromDeezer(song, artist) {
   return '';
 }
 
-// Backup #2: MusicBrainz + Cover Art Archive. Slower (two requests) but
-// covers a lot of catalog gaps, especially for less mainstream tracks.
 async function fetchArtworkFromMusicBrainz(song, artist) {
   try {
     const q = encodeURIComponent(`recording:"${song}" AND artist:"${artist}"`);
@@ -576,8 +531,6 @@ async function fetchArtworkFromMusicBrainz(song, artist) {
   return '';
 }
 
-// Tries each artwork source in order until one returns a usable image.
-// Keeps applyMusicAsActivity simple — it just awaits this one function.
 async function fetchArtworkUrl(song, artist) {
   const sources = [fetchArtworkFromItunes, fetchArtworkFromDeezer, fetchArtworkFromMusicBrainz];
   for (const source of sources) {
@@ -587,20 +540,6 @@ async function fetchArtworkUrl(song, artist) {
   return '';
 }
 
-// BUGFIX #1: clear any existing presence before applying the new music activity.
-// Without this, Discord can briefly show the old + new activity together (the
-// "two listening entries" bug), especially when songs change back-to-back.
-// isPaused: when true, marks the activity as paused (Discord has no native paused
-// state for Rich Presence, so we surface it via a "⏸ Paused" state line and a
-// paused icon on the small image, which is the same convention official
-// integrations like Spotify use).
-//
-// Elapsed-time tracking for pause/resume: we keep a running "elapsed so far" total
-// (musicElapsedMs) plus the timestamp the current playing segment started
-// (musicSegmentStart). On pause we fold the segment into the total and stop the
-// clock. On resume we compute a start timestamp of (now - total elapsed) so
-// Discord's built-in elapsed counter continues from where playback left off
-// instead of restarting at 0:00. A genuinely new song resets both to zero.
 let musicElapsedMs = 0;
 let musicSegmentStart = 0;
 
@@ -610,28 +549,20 @@ async function applyMusicAsActivity(song, artist, isPaused = false) {
 
   const isNewSong = song !== lastAppliedMusicTitle;
   if (isNewSong) {
-    // New track: start the elapsed counter fresh.
     musicElapsedMs = 0;
     musicSegmentStart = isPaused ? 0 : Date.now();
   } else if (isPaused && !lastAppliedMusicPaused) {
-    // Same track, just paused: fold the time since the segment started into the total,
-    // then stop the clock (segment start cleared so we don't double-count on the next call).
     if (musicSegmentStart) musicElapsedMs += Date.now() - musicSegmentStart;
     musicSegmentStart = 0;
   } else if (!isPaused && lastAppliedMusicPaused) {
-    // Same track, resuming: start a fresh segment from now; musicElapsedMs already
-    // holds everything accumulated before the pause.
     musicSegmentStart = Date.now();
   }
-  // else: same track, same playback state (e.g. periodic re-poll) — leave timers as-is.
 
   $('act-type').value = '2';
   $('act-name').value = song || 'Music';
   $('act-details').value = artist || '';
   $('act-state').value = isPaused ? '⏸ Paused' : '';
 
-  // Only show an elapsed timer while actually playing — a frozen/absent timestamp
-  // while paused is what makes Discord's counter stop advancing during a pause.
   if (isPaused) {
     $('act-ts-start').value = '';
   } else {
@@ -645,15 +576,9 @@ async function applyMusicAsActivity(song, artist, isPaused = false) {
     $('act-lg-img').value = artwork;
     $('act-lg-txt').value = song || '';
   } else {
-    // BUGFIX #2: leave the large image field empty rather than pointing at any
-    // placeholder of our own — Discord's client renders its own default "?" art
-    // for an activity with no image, which is the desired fallback here.
     $('act-lg-img').value = '';
     $('act-lg-txt').value = '';
   }
-  // Small image shows a pause/play glyph so the paused state is visible even
-  // without reading the state line. Uses Discord's own generic CDN emoji assets
-  // so no app ID / uploaded asset is required.
   if (isPaused) {
     $('act-sm-img').value = 'https://cdn.discordapp.com/emojis/852860604073836564.png';
     $('act-sm-txt').value = 'Paused';
@@ -666,9 +591,6 @@ async function applyMusicAsActivity(song, artist, isPaused = false) {
   updatePreview();
   await applyPresence();
 
-  // Surface why artwork didn't make it to Discord, instead of failing silently.
-  // resolvePresenceImages (called inside applyPresence) sets lastAssetResolveError
-  // when the external-asset lookup fails.
   const artEl = $('music-art-status');
   if (artEl) {
     if (artwork && !lastLargeAssetResolveError) {
@@ -683,8 +605,6 @@ async function applyMusicAsActivity(song, artist, isPaused = false) {
     }
   }
 
-  // BUGFIX #2: surface an in-app "stop" control specifically for the
-  // music-driven activity, separate from the global Stop Everything panel.
   musicActivityActive = true;
   lastAppliedMusicTitle = song || '';
   lastAppliedMusicPaused = isPaused;
@@ -692,7 +612,6 @@ async function applyMusicAsActivity(song, artist, isPaused = false) {
   if (stopBtn) stopBtn.classList.remove('hidden');
 }
 
-// BUGFIX #2 (cont.): dedicated stop control for music-driven presence.
 function stopMusicActivityUI() {
   musicActivityActive = false;
   lastAppliedMusicTitle = '';
@@ -723,9 +642,6 @@ function updateNotifAccessStatus(enabled) {
   }
   if (musicBtn) musicBtn.classList.toggle('hidden', enabled);
 }
-// Both prompts (the banner and the in-card button) call the same native bridge
-// method — the app no longer auto-launches the notification-access settings
-// screen on startup. It only opens when the user explicitly taps one of these.
 function requestNotificationAccess() {
   if (window.NativeBridge && typeof window.NativeBridge.requestNotificationAccess === 'function') {
     window.NativeBridge.requestNotificationAccess();
@@ -736,12 +652,6 @@ if (notifAccessBtn) notifAccessBtn.addEventListener('click', requestNotification
 const musicDetectorNotifBtn = $('music-detector-enable-notif-btn');
 if (musicDetectorNotifBtn) musicDetectorNotifBtn.addEventListener('click', requestNotificationAccess);
 
-// BUGFIX #3: called by the native Android bridge (via NotificationListener's
-// MUSIC_STOPPED broadcast) when the music notification is swiped away/cleared.
-// Previously this only hid the "Now Playing" detector card and left the Discord
-// activity running indefinitely. Now it also actually clears the presence, same
-// as tapping "Stop music activity" manually — only if the currently-applied
-// activity was in fact the music one, so we don't clobber an unrelated manual activity.
 function onMusicNotificationCleared() {
   musicDismissed = true;
   lastMusicTitle = '';
@@ -759,10 +669,8 @@ $('music-apply-btn').addEventListener('click',()=>applyMusicAsActivity($('music-
 $('music-dismiss-btn').addEventListener('click',()=>{musicDismissed=true;$('music-detected-box').classList.add('hidden');$('music-eq').style.display='none';});
 $('music-manual-apply').addEventListener('click',()=>{const s=$('music-manual-song').value.trim(),a=$('music-manual-artist').value.trim();if(!s)return;applyMusicAsActivity(s,a);$('music-manual-song').value='';$('music-manual-artist').value='';});
 $('music-manual-song').addEventListener('keydown',e=>{if(e.key==='Enter')$('music-manual-apply').click();});
-// BUGFIX #2 (cont.): wire up the new stop button if present in the HTML
 if ($('music-stop-btn')) $('music-stop-btn').addEventListener('click', stopMusicActivity);
 
-// ═══════════ AFK AUTO-IDLE ═══════════
 let afkEnabled=false, afkTimer=null, afkIsIdle=false, lastActivityTime=Date.now();
 function setAfkEnabled(v){
   afkEnabled=v;$('afk-toggle').classList.toggle('on',v);
@@ -809,7 +717,6 @@ function updateAfkStatus(msg){
 }
 $('afk-toggle').addEventListener('click',()=>setAfkEnabled(!afkEnabled));
 
-// ═══════════ COUNTDOWN ACTIVITY ═══════════
 let cdTimer=null, cdEndTime=0;
 function startCountdown(){
   const label=$('cd-label').value.trim()||'Studying';
@@ -828,14 +735,12 @@ function tickCountdown(label){
   if(left<=0){
     $('cd-time-display').textContent='Done!';
     clearInterval(cdTimer);cdTimer=null;
-    // Apply "Done" presence for 5 seconds then clear
     $('act-type').value='0';$('act-name').value=label;$('act-details').value='Finished!';$('act-state').value='';
     setActivityEnabled(true);applyPresence();
     setTimeout(()=>{if(gw&&gw._state==='connected')gw.clearPresence(currentStatus);isActive=false;updateStatBar();},5000);
     return;
   }
   $('cd-time-display').textContent=fmtMinsShort(left);
-  // Update activity details live
   $('act-type').value='0';$('act-name').value=label;$('act-details').value=fmtMinsShort(left)+' left';$('act-state').value='';
   if(!activityEnabled){setActivityEnabled(true);}
   applyPresence();
@@ -849,7 +754,6 @@ function stopCountdown(){
 $('cd-start-btn').addEventListener('click',startCountdown);
 $('cd-stop-btn').addEventListener('click',stopCountdown);
 
-// ═══════════ SCHEDULE RULES ═══════════
 let scheduleEnabled=false, scheduleRules=[], scheduleTimer=null, lastScheduledMin='';
 try{scheduleRules=JSON.parse(localStorage.getItem('ds_schedule_rules')||'[]');}catch{}
 const DAY_NAMES=['Su','Mo','Tu','We','Th','Fr','Sa'];
@@ -888,7 +792,6 @@ function renderRules(){
 }
 window.deleteRule=function(i){scheduleRules.splice(i,1);saveScheduleRules();renderRules();};
 
-// Day chip selection
 document.querySelectorAll('.day-chip').forEach(c=>c.addEventListener('click',()=>c.classList.toggle('on')));
 $('show-add-rule-btn').addEventListener('click',()=>{$('add-rule-form').classList.remove('hidden');$('show-add-rule-btn').classList.add('hidden');});
 $('rule-cancel-btn').addEventListener('click',()=>{$('add-rule-form').classList.add('hidden');$('show-add-rule-btn').classList.remove('hidden');});
@@ -902,7 +805,6 @@ $('rule-add-btn').addEventListener('click',()=>{
 });
 $('schedule-toggle').addEventListener('click',()=>setScheduleEnabled(!scheduleEnabled));
 
-// ═══════════ STATUS ROTATION ═══════════
 let rotationEnabled=false, rotationTimer=null, rotationIndex=0, rotationSelected=[];
 function setRotationEnabled(v){
   rotationEnabled=v;$('rotation-toggle').classList.toggle('on',v);
@@ -934,7 +836,6 @@ function renderRotationPresets(){
 }
 $('rotation-toggle').addEventListener('click',()=>setRotationEnabled(!rotationEnabled));
 
-// ═══════════ EXPORT / IMPORT PRESETS ═══════════
 $('export-presets-btn').addEventListener('click',()=>{
   if(!presets.length){alert('No presets to export.');return;}
   const json=JSON.stringify(presets,null,2);
@@ -965,7 +866,6 @@ $('import-presets-input').addEventListener('change',e=>{
   reader.readAsText(file);
 });
 
-// ═══════════ SERVER RETRY ═══════════
 async function tryConnectServer(apiBase){
   apiBase=normalizeApiUrl(apiBase);if(!savedToken||!apiBase)return;
   $('retry-server-btn').disabled=true;$('retry-server-btn').textContent='…';
@@ -979,7 +879,6 @@ async function tryConnectServer(apiBase){
   finally{$('retry-server-btn').disabled=false;$('retry-server-btn').textContent='Retry';}
 }
 
-// ═══════════ CONNECT ═══════════
 async function connectGateway(token,apiBase,forceNew=false){
   apiBase=normalizeApiUrl(apiBase);savedToken=token;savedApiBase=apiBase;
   if(forceNew){await stopStoredServerSession(apiBase);localStorage.removeItem('ds_session_id');localStorage.removeItem('ds_session_expires');Server.sessionId=null;Server.expiresAt=null;}
@@ -1006,7 +905,6 @@ async function connectGateway(token,apiBase,forceNew=false){
     else if(apiBase){setBannerBrowserMode(serverErr||'Could not reach server — check the URL and try Retry below');$('retry-url-input').value=apiBase;}
     else{setBannerNoServer();}
     $('apply-btn').disabled=false;$('clear-btn').disabled=false;updateStatBar();
-    // Restore saved preferences
     if(localStorage.getItem('ds_music_auto')==='1')setMusicEnabled(true);
     if(localStorage.getItem('ds_afk_enabled')==='1'){const m=parseInt(localStorage.getItem('ds_afk_minutes')||'10');$('afk-minutes').value=m;setAfkEnabled(true);}
     if(localStorage.getItem('ds_schedule_enabled')==='1'){renderRules();setScheduleEnabled(true);}
@@ -1017,7 +915,6 @@ async function connectGateway(token,apiBase,forceNew=false){
   gw.connect();
 }
 
-// ═══════════ EVENTS ═══════════
 $('connect-btn').addEventListener('click',()=>{const t=$('token-input').value.trim();if(!t)return;connectGateway(t,$('server-url-input').value.trim(),true);});
 $('token-input').addEventListener('keydown',e=>{if(e.key==='Enter')$('connect-btn').click();});
 (()=>{const s=localStorage.getItem('ds_api_base');$('server-url-input').value=s?normalizeApiUrl(s):DEFAULT_API;})();
@@ -1029,11 +926,8 @@ document.querySelectorAll('.status-btn').forEach(b=>b.addEventListener('click',(
 $('activity-toggle').addEventListener('click',()=>setActivityEnabled(!activityEnabled));
 $('act-type').addEventListener('change',onTypeChange);
 $('act-platform').addEventListener('change',updatePreview);
-// Live preview — update on every keystroke in activity fields
 ['act-name','act-details','act-state','act-lg-img','act-sm-img','act-appid','act-sm-appid','act-platform','act-ts-start','act-ts-end'].forEach(id=>{const el=$(id);if(el)el.addEventListener('input',updatePreview);});
-// App ID warning — show when image fields have content but no app ID
 ['act-lg-img','act-sm-img','act-appid','act-sm-appid'].forEach(id=>{const el=$(id);if(el)el.addEventListener('input',checkImgAppId);});
-// Also update preview whenever a button label changes (delegated via mutation observer on buttons-list)
 new MutationObserver(updatePreview).observe($('buttons-list'),{childList:true,subtree:true,characterData:true});
 $('buttons-list').addEventListener('input',updatePreview);
 $('ts-now-btn').addEventListener('click',()=>{const now=new Date();now.setSeconds(0,0);$('act-ts-start').value=now.toISOString().slice(0,16);updatePreview();});
@@ -1054,7 +948,6 @@ $('disconnect-btn').addEventListener('click',async()=>{
     isActive=false;localStorage.removeItem('ds_token');localStorage.removeItem('ds_session_id');localStorage.removeItem('ds_session_expires');showLogin();
   });
 
-// ═══════════ PRESETS ═══════════
 function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 const ICON_LOAD=`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`;
 const ICON_EDIT=`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
@@ -1081,7 +974,6 @@ window.editPreset=function(i){
   const item=$(`preset-item-${i}`);
   const p=presets[i];
   if(!item||!p)return;
-  // If already editing this one, cancel
   if(item.classList.contains('editing')){renderPresets();return;}
   item.classList.add('editing');
   item.innerHTML=`
@@ -1118,7 +1010,6 @@ window.overwritePreset=function(i){
 window.deletePreset=function(i){
   const item=$(`preset-item-${i}`);
   const p=presets[i];if(!p)return;
-  // Show inline confirm inside the item
   if(item&&!item.dataset.confirming){
     item.dataset.confirming='1';
     const del=item.querySelector('[title="Delete"]');
@@ -1126,9 +1017,7 @@ window.deletePreset=function(i){
       del.textContent='';
       del.innerHTML='Delete?';
       del.style.cssText='color:#f47c7e;font-size:10px;font-weight:700;padding:3px 7px;border:1px solid #f47c7e;border-radius:4px;background:transparent;cursor:pointer;white-space:nowrap';
-      // Second click confirms
       del.onclick=()=>{presets.splice(i,1);savePresets();renderPresets();renderRotationPresets();};
-      // Click elsewhere cancels
       const cancel=()=>{delete item.dataset.confirming;renderPresets();document.removeEventListener('click',cancel);};
       setTimeout(()=>document.addEventListener('click',cancel),0);
     }
@@ -1150,8 +1039,6 @@ window.loadPreset=function(i){
     btns.forEach(b=>addButton(b.label,b.url));onTypeChange();checkImgAppId();
   }else{setActivityEnabled(false);}
   applyPresence();
-  // BUGFIX: loading a manual preset should also clear any "music activity active" UI state,
-  // since we're no longer showing the song-driven activity.
   stopMusicActivityUI();
 };
 function addButton(label='',url=''){
@@ -1168,14 +1055,10 @@ $('preset-name-input').addEventListener('keydown',e=>{if(e.key==='Enter')$('save
 const restorePrebuiltBtn=$('restore-prebuilt-btn');
   if(restorePrebuiltBtn)restorePrebuiltBtn.addEventListener('click',()=>addPrebuiltPresets(true));
 
-// ═══════════ AUTO-RESTORE ═══════════
 (function(){
   if(localStorage.getItem('ds_prebuilt_seeded_v4')!=='1'||!PREBUILT_PRESETS.every(bp=>presets.some(p=>p.name===bp.name))){addPrebuiltPresets(false);localStorage.setItem('ds_prebuilt_seeded_v4','1');}
   renderPresets();renderRotationPresets();renderRules();updateProfileActivity();
 
-  // Consent must be accepted before the login/reconnect flow runs. If the user
-  // hasn't consented yet, initConsentGate() shows the gate and wires up the
-  // Accept button; we stop here rather than auto-reconnecting behind it.
   if (!initConsentGate()) return;
 
     const token=localStorage.getItem('ds_token'),sessionId=localStorage.getItem('ds_session_id'),expires=Number(localStorage.getItem('ds_session_expires')||0);
@@ -1183,13 +1066,11 @@ const restorePrebuiltBtn=$('restore-prebuilt-btn');
   if(rawBase!==apiBase)localStorage.setItem('ds_api_base',apiBase);
   if(token){
     if(sessionId&&expires>Date.now()+60000&&apiBase){Server.init(apiBase);Server.sessionId=sessionId;Server.expiresAt=expires;Server._startPolling();}
-    // Skip the login page — go straight to dashboard with a reconnecting badge
     showDashboard();
     $('conn-dot').className='conn-dot';
     $('conn-text').textContent='Reconnecting…';
     $('conn-text').style.color='var(--text3)';
     $('apply-btn').disabled=true;$('clear-btn').disabled=true;
-    // Placeholder avatar while we fetch user info
     $('user-avatar').src='https://cdn.discordapp.com/embed/avatars/0.png';
     $('menu-avatar').src='https://cdn.discordapp.com/embed/avatars/0.png';
     $('username-text').textContent='Reconnecting…';$('profile-card-name').textContent='Reconnecting…';$('profile-card-id').textContent='Fetching Discord profile…';
