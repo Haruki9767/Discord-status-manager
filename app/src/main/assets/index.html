@@ -126,9 +126,12 @@
       <div class="how-to-content hidden" id="how-to-content">
         <ol style="margin-top:8px">
           <li>Open Discord in your browser at <strong>discord.com/app</strong></li>
-          <li>Press <strong>F12</strong> to open DevTools</li>
-          <li>Go to <strong>Application</strong> tab → Local Storage → discord.com</li>
-          <li>Find the key named <strong>token</strong> and copy the value</li>
+          <li>Open <strong>Devtools</strong>[F12 or Cmd+option+i(mac)]</li>
+          <li>Go to <strong>Network</strong> tab</li>
+          <li>Click on any server channel, direct message, or send a message in Discord to trigger an <strong>API</strong> request.</li>
+          <li>In the network log, look for an entry like <strong>science</strong>.</li>
+          <li>Click the request, select the Headers tab, and scroll down to <strong>Request Headers</strong>.</li>
+          <li>Locate the authorization header. The alphanumeric string next to it is your <strong>account token</strong>.</li>
         </ol>
         <p class="note">Your token never leaves your browser except to the server URL you configure above.</p>
       </div>
@@ -139,7 +142,7 @@
     <span class="dot-sep">·</span>
     <a href="https://lime.is-a.dev/" target="_blank" rel="noopener">Portfolio</a>
     <span class="dot-sep">·</span>
-    <a href="https://paranoid-projects.pages.dev/" target="_blank" rel="noopener">Other projects</a>
+    <a href="https://lime.is-a.dev/projects" target="_blank" rel="noopener">Other projects</a>
     <span class="dot-sep">·</span>
     <a href="https://github.com/Haruki9767/Discord-status-manager" target="_blank" rel="noopener">Github</a>
     <span class="dot-sep">·</span>
@@ -219,7 +222,7 @@
             <button class="btn btn-sm btn-danger-soft" id="stop-server-btn" style="padding:3px 9px;font-size:11px">Stop</button>
           </div>
           <div class="server-retry-row hidden" id="server-retry-row">
-            <input type="text" id="retry-url-input" placeholder="https://your-api.railway.app/api" />
+            <input type="text" id="retry-url-input" placeholder="https://your-domain/api" />
             <button class="btn btn-sm btn-primary" id="retry-server-btn">Retry</button>
           </div>
         </div>
@@ -250,9 +253,9 @@
             <button class="btn btn-sm btn-primary" id="music-manual-apply">Apply</button>
           </div>
         </div>
-        <!-- Shows why album art did or didn't get attached to the activity -->
+        
         <div id="music-art-status" class="music-note hidden" style="color:var(--yellow)"></div>
-        <!-- Dedicated stop control for the music-driven activity, separate from Stop Everything -->
+        
         <div style="margin-top:8px;display:flex;justify-content:flex-end">
           <button class="btn btn-xs btn-danger-soft hidden" id="music-stop-btn">Stop music activity</button>
         </div>
@@ -360,7 +363,7 @@
             <div class="iib-title"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>What Discord will actually load</div>
             Discord does <strong>not</strong> reliably load random image links in activity asset if its a pinterest link  or other third party. For best results please use Google image links.
             <div class="iib-method"><strong>Recommended — uploaded Discord asset:</strong><ol><li>Go to <code>discord.com/developers/applications</code></li><li>New Application → Rich Presence → Art Assets → upload the image</li><li>Paste the <strong>App ID</strong> above and type the uploaded asset key/id in the image field (Doesnt work sometimes)</li></ol></div>
-            <div class="iib-method"><strong>Also works:</strong><br>Paste a Discord CDN attachment URL or a Discord <code>/app-assets/</code> CDN URL. Imgur, ImgBB, Tenor, Giphy, and normal website images may preview here but Discord might not load them somtimes.</div>
+            <div class="iib-method"><strong>Also works:</strong><br>Paste a Discord CDN attachment URL or a Discord <code>/app-assets/</code> CDN URL.</div>
           </div>
           <div class="section-label" style="margin-top:13px">Small Image</div>
           <div style="margin-bottom:7px">
@@ -457,7 +460,7 @@
 
     </div>
 
-    <!-- RIGHT COLUMN: Presets + Rotation -->
+    <!-- RIGHT COLUMN -->
     <div style="display:flex;flex-direction:column;gap:14px">
 
       <!-- Presets -->
@@ -509,7 +512,7 @@
     <span class="dot-sep">·</span>
     <a href="https://github.com/Haruki9767/Discord-status-manager" target="_blank" rel="noopener">Repository</a>
     <span class="dot-sep">·</span>
-    <a href="https://paranoid-projects.pages.dev/" target="_blank" rel="noopener">My Projects</a>
+    <a href="https://lime.is-a.dev/projects" target="_blank" rel="noopener">My Projects</a>
     <span class="dot-sep">·</span>
     <a href="https://discord.gg/wtrraAdjb5" target="_blank" rel="noopener">Discord</a>
     <span class="dot-sep">·</span>
