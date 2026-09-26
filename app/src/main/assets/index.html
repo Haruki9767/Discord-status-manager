@@ -111,10 +111,10 @@
         <label class="field-label">Server URL <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text3)">(for 24/7 mode)</span></label>
         <input type="text" id="server-url-input" placeholder="https://activity-twentyfour.onrender.com/api" />
         <div class="test-row">
-          <button class="btn btn-sm btn-ghost" id="test-server-btn" style="font-size:11px;padding:4px 11px">⚡ Test Connection</button>
+          <button class="btn btn-sm btn-ghost" id="test-server-btn" style="font-size:11px;padding:4px 11px">Test Connection</button>
           <span id="test-result" class="hidden"></span>
         </div>
-        <div class="hint" style="margin-top:4px">Leave blank for browser-only mode (presence stops when you close this tab).</div>
+        <div class="hint" style="margin-top:4px">Leave blank for browser-only mode (presence stops when android kills the app background).</div>
       </div>
       <button class="btn btn-primary" style="width:100%;margin-top:12px" id="connect-btn">Connect to Discord</button>
     </div>
@@ -419,7 +419,7 @@
           <button class="btn btn-ghost" id="clear-btn" disabled>Clear Activity</button>
         </div>
         <div class="stop-all-panel">
-          <div><strong>Stop old / stuck activity</strong><span>Clears browser presence and stops the saved 24/7 server session.</span></div>
+          <div><strong>Stop old / stuck activity</strong><span>Clears browser presence and stops the saved 24/7 server session.(Doesn't work sometimes)</span></div>
           <button class="btn btn-sm btn-danger-soft" id="stop-all-btn">Stop everything</button>
         </div>
 
